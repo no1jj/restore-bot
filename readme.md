@@ -46,7 +46,7 @@
 1. 저장소 클론하기
 ```bash
 git clone https://github.com/no1jj/restore-bot
-cd no1jj-bot
+cd restore-bot 
 ```
 
 2. 필요한 패키지 설치
