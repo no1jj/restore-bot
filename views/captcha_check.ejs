@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>보안 확인</title>
+    <style>
+        body {
+            font-family: 'Poppins', 'Noto Sans KR', sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #8e2de2;
+            background-image: linear-gradient(to right, #8e2de2, #4a00e0);
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            background-color: rgba(245, 245, 245, 0.9);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            backdrop-filter: blur(5px);
+            transform: translateY(0);
+            animation: float 6s ease-in-out infinite;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .captcha-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: pulse 2s ease infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        h1 {
+            color: #3498db;
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .captcha-message {
+            color: #555;
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .captcha-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            transform: scale(1);
+            transition: transform 0.3s ease;
+        }
+
+        .captcha-container:hover {
+            transform: scale(1.02);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn:disabled {
+            background: linear-gradient(45deg, #95a5a6, #7f8c8d);
+            cursor: not-allowed;
+            transform: translateY(0);
+            box-shadow: 0 4px 15px rgba(127, 140, 141, 0.3);
+        }
+    </style>
+    <script>
+        function enableSubmitButton(token) {
+            document.getElementById('h_captcha_response').value = token;
+            document.getElementById('submitBtn').disabled = false;
+        }
+    </script>
+    <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+</head>
+<body>
+    <div class="container">
+        <div class="captcha-icon">🔒</div>
+        <h1>보안 확인</h1>
+        <div class="captcha-message">
+            인증을 완료하기 위해 아래의 보안 확인을 진행해주세요.
+        </div>
+        
+        <form action="/verify" method="POST">
+            <input type="hidden" name="state" value="<%= state %>">
+            <input type="hidden" name="code" value="<%= actoken %>">
+            <input type="hidden" name="h_captcha_response" id="h_captcha_response" value="">
+            
+            <div class="captcha-container">
+                <div class="h-captcha" 
+                    data-sitekey="<%= sitekey %>" 
+                    data-callback="enableSubmitButton"></div>
+            </div>
+            
+            <button type="submit" class="btn" id="submitBtn" disabled>인증 완료</button>
+        </form>
+    </div>
+</body>
+</html>

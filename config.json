@@ -1,0 +1,14 @@
+{
+    "botToken": "봇토큰",
+    "clientId": "클라이언트ID",
+    "clientSecret": "클라이언트시크릿",
+    "ownerId": "오너 디스코드 ID",
+    "domain": "https://yourdomain.com",
+    "DBFolderPath": "./DB",
+    "DBPath": "./db.db",
+    "port": 3000,
+    "ownerLogWebhook": "오너로그웹훅URL",
+    "hCaptchaSiteKey": "hCaptcha사이트키",
+    "hCaptchaSecretKey": "hCaptcha시크릿키",
+    "vpnApiKey": "VPN확인API키"
+  }
