@@ -15,7 +15,7 @@ def LoadConfig():
     if _config_instance is not None:
         return _config_instance
         
-    configPath = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'config.json')
+    configPath = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'config.json')
     with open(configPath, 'r', encoding='utf-8') as f:
         config_data = json.load(f)
         class Config: 
