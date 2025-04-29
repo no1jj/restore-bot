@@ -17,12 +17,6 @@
             background-image: linear-gradient(to right, #3a7bd5, #00d2ff);
         }
 
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
         .container {
             background-color: rgba(245, 245, 245, 0.9);
             border-radius: 20px;
@@ -33,26 +27,33 @@
             width: 90%;
             backdrop-filter: blur(5px);
             transform: translateY(0);
-            animation: float 6s ease-in-out infinite;
+            animation: float 8s ease-in-out infinite;
             border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+
+        @media (max-width: 576px) {
+            .container {
+                padding: 30px 20px;
+                margin: 0 15px;
+            }
         }
 
         @keyframes float {
             0% { transform: translateY(0px); }
-            50% { transform: translateY(-15px); }
+            50% { transform: translateY(-10px); }
             100% { transform: translateY(0px); }
         }
 
         .error-icon {
             font-size: 80px;
             margin-bottom: 20px;
-            animation: shake 0.5s ease-in-out;
+            animation: shake 0.7s ease-in-out;
         }
 
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-            20%, 40%, 60%, 80% { transform: translateX(5px); }
+            10%, 50%, 90% { transform: translateX(-4px); }
+            30%, 70% { transform: translateX(4px); }
         }
 
         h1 {
@@ -76,9 +77,31 @@
 
         .error-message {
             color: #555;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             line-height: 1.6;
             margin-bottom: 25px;
+            font-weight: 400;
+            letter-spacing: -0.2px;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(45deg, #3a7bd5, #00d2ff);
+            color: white;
+            text-decoration: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(58, 123, 213, 0.3);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(58, 123, 213, 0.4);
         }
     </style>
 </head>
@@ -91,6 +114,7 @@
             요청하신 페이지를 찾을 수 없습니다.<br>
             주소가 올바른지 확인해주세요.
         </div>
+        <a href="/" class="cta-button">홈으로 돌아가기</a>
     </div>
 </body>
 </html>

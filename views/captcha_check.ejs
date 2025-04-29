@@ -17,12 +17,6 @@
             background-image: linear-gradient(to right, #8e2de2, #4a00e0);
         }
 
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
         .container {
             background-color: rgba(245, 245, 245, 0.9);
             border-radius: 20px;
@@ -33,25 +27,32 @@
             width: 90%;
             backdrop-filter: blur(5px);
             transform: translateY(0);
-            animation: float 6s ease-in-out infinite;
+            animation: float 8s ease-in-out infinite;
             border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+
+        @media (max-width: 576px) {
+            .container {
+                padding: 30px 20px;
+                margin: 0 15px;
+            }
         }
 
         @keyframes float {
             0% { transform: translateY(0px); }
-            50% { transform: translateY(-15px); }
+            50% { transform: translateY(-10px); }
             100% { transform: translateY(0px); }
         }
 
         .captcha-icon {
             font-size: 80px;
             margin-bottom: 20px;
-            animation: pulse 2s ease infinite;
+            animation: pulse 2.5s ease infinite;
         }
 
         @keyframes pulse {
             0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
+            50% { transform: scale(1.08); }
             100% { transform: scale(1); }
         }
 
@@ -64,9 +65,11 @@
 
         .captcha-message {
             color: #555;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             line-height: 1.6;
             margin-bottom: 25px;
+            font-weight: 400;
+            letter-spacing: -0.2px;
         }
 
         .captcha-container {
@@ -105,6 +108,17 @@
             cursor: not-allowed;
             transform: translateY(0);
             box-shadow: 0 4px 15px rgba(127, 140, 141, 0.3);
+        }
+
+        @media (max-width: 400px) {
+            .captcha-container {
+                transform-origin: top center;
+                transform: scale(0.9);
+            }
+            
+            .captcha-container:hover {
+                transform: scale(0.92);
+            }
         }
     </style>
     <script>

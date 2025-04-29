@@ -15,7 +15,7 @@
             align-items: center;
             background: linear-gradient(45deg, #a8ff78, #78ffd6, #78ffd6, #56CCF2, #2F80ED);
             background-size: 400% 400%;
-            animation: gradientBG 15s ease infinite;
+            animation: gradientBG 20s ease infinite;
         }
 
         @keyframes gradientBG {
@@ -34,26 +34,33 @@
             width: 90%;
             backdrop-filter: blur(5px);
             transform: translateY(0);
-            animation: float 6s ease-in-out infinite;
+            animation: float 8s ease-in-out infinite;
             border: 2px solid rgba(255, 255, 255, 0.5);
+        }
+
+        @media (max-width: 576px) {
+            .container {
+                padding: 30px 20px;
+                margin: 0 15px;
+            }
         }
 
         @keyframes float {
             0% { transform: translateY(0px); }
-            50% { transform: translateY(-15px); }
+            50% { transform: translateY(-10px); }
             100% { transform: translateY(0px); }
         }
 
         .success-icon {
             font-size: 80px;
             margin-bottom: 20px;
-            animation: bounce 1s ease infinite;
+            animation: bounce 1.2s ease infinite;
         }
 
         @keyframes bounce {
             0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-            40% { transform: translateY(-20px); }
-            60% { transform: translateY(-10px); }
+            40% { transform: translateY(-15px); }
+            60% { transform: translateY(-8px); }
         }
 
         h1 {
@@ -65,9 +72,31 @@
 
         .success-message {
             color: #555;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             line-height: 1.6;
             margin-bottom: 25px;
+            font-weight: 400;
+            letter-spacing: -0.2px;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            color: white;
+            text-decoration: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(39, 174, 96, 0.3);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(39, 174, 96, 0.4);
         }
     </style>
 </head>
@@ -79,6 +108,7 @@
             인증에 성공했습니다!<br>
             디스코드 서버에서 역할이 부여되었습니다.
         </div>
+        <a href="https://discord.com/channels/@me" class="cta-button">디스코드로 돌아가기</a>
     </div>
 </body>
 </html>
