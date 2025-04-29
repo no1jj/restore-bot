@@ -11,7 +11,7 @@
             padding: 0;
             background: linear-gradient(45deg, #4568dc, #b06ab3, #4568dc);
             background-size: 600% 600%;
-            animation: gradientBG 15s ease infinite;
+            animation: gradientBG 20s ease infinite;
             line-height: 1.6;
             color: #333;
         }
@@ -27,7 +27,7 @@
             margin: 40px auto;
             padding: 40px;
             background-color: rgba(245, 245, 245, 0.9);
-            border-radius: it;
+            border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             backdrop-filter: blur(5px);
             border: 2px solid rgba(255, 255, 255, 0.5);
@@ -58,6 +58,9 @@
 
         p, ul {
             margin-bottom: 15px;
+            font-size: 1.05rem;
+            font-weight: 400;
+            letter-spacing: -0.2px;
         }
 
         ul {
@@ -109,19 +112,44 @@
         }
 
         .back-to-top:hover {
+            transform: translateY(-3px);
             background-color: rgba(69, 104, 220, 1);
+            box-shadow: 0 6px 12px rgba(69, 104, 220, 0.4);
         }
 
         @media (max-width: 768px) {
             .container {
                 margin: 20px;
-                padding: 20px;
+                padding: 25px 20px;
+                border-radius: 15px;
             }
             h1 {
                 font-size: 2rem;
             }
             h2 {
                 font-size: 1.5rem;
+            }
+            .emoji {
+                font-size: 1.2em;
+            }
+            p, ul {
+                font-size: 1rem;
+            }
+            .highlight {
+                padding: 12px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .container {
+                margin: 15px;
+                padding: 20px 15px;
+            }
+            h1 {
+                font-size: 1.8rem;
+            }
+            h2 {
+                font-size: 1.3rem;
             }
         }
     </style>
