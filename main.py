@@ -32,7 +32,7 @@ loger = Logger()
 
 def RunBot():
     loger.info("🤖 봇", "Discord 봇 시작 중...")
-    return subprocess.Popen([sys.executable, "bot.py"], 
+    return subprocess.Popen([sys.executable, "bot/bot.py"], 
                           stdout=subprocess.PIPE,
                           stderr=subprocess.STDOUT,
                           text=True,
@@ -42,14 +42,14 @@ def RunBot():
 def RunWebServer():
     loger.info("🌐 웹", "웹 서버 시작 중...")
     if os.name == 'nt':
-        return subprocess.Popen(["node", "web.js"], 
+        return subprocess.Popen(["node", "web/app.js"], 
                               stdout=subprocess.PIPE,
                               stderr=subprocess.STDOUT,
                               text=True,
                               encoding='utf-8',
                               errors='replace')
     else:
-        return subprocess.Popen(["node", "web.js"], 
+        return subprocess.Popen(["node", "web/app.js"], 
                               stdout=subprocess.PIPE,
                               stderr=subprocess.STDOUT,
                               text=True,
