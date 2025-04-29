@@ -43,10 +43,9 @@
 - SQLite3
 
 ### 설치 단계
-1. 저장소 클론하기
+1. 릴리즈 다운로드
 ```bash
-git clone https://github.com/no1jj/restore-bot
-cd restore-bot 
+https://github.com/no1jj/restore-bot/releases/tag/V1.0
 ```
 
 2. 필요한 패키지 설치
