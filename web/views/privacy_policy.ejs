@@ -1,53 +1,82 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>개인정보처리방침</title>
     <style>
+        :root {
+            --bg-gradient: linear-gradient(to bottom right, #1e1e2f, #2c2c3c);
+            --container-bg: rgba(35, 35, 50, 0.9);
+            --text-color: #e4e4e4;
+            --heading-color: #61dafb;
+            --heading-border: rgba(255, 255, 255, 0.1);
+            --subheading-color: #a682ff;
+            --highlight-bg: rgba(30, 30, 47, 0.7);
+            --highlight-border: #4889e3;
+            --back-btn-bg: rgba(69, 104, 220, 0.8);
+            --back-btn-hover-bg: rgba(69, 104, 220, 1);
+            --container-border: rgba(255, 255, 255, 0.1);
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --footer-color: #999;
+        }
+
+        html[data-theme="light"] {
+            --bg-gradient: linear-gradient(to bottom right, #ffffff, #fdf1ec);
+            --container-bg: rgba(255, 255, 255, 0.9);
+            --text-color: #333;
+            --heading-color: #4568dc;
+            --heading-border: #eee;
+            --subheading-color: #5a3f93;
+            --highlight-bg: #f8f9fa;
+            --highlight-border: #4568dc;
+            --back-btn-bg: rgba(69, 104, 220, 0.8);
+            --back-btn-hover-bg: rgba(69, 104, 220, 1);
+            --container-border: rgba(255, 255, 255, 0.5);
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --footer-color: #666;
+        }
+
         body {
             font-family: 'Poppins', 'Noto Sans KR', sans-serif;
             margin: 0;
             padding: 0;
-            background: linear-gradient(45deg, #4568dc, #b06ab3, #4568dc);
-            background-size: 600% 600%;
-            animation: gradientBG 20s ease infinite;
+            background: var(--bg-gradient);
+            background-size: 200% 200%;
             line-height: 1.6;
-            color: #333;
-        }
-
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            color: var(--text-color);
+            transition: all 0.3s ease;
         }
 
         .container {
             max-width: 800px;
             margin: 40px auto;
             padding: 40px;
-            background-color: rgba(245, 245, 245, 0.9);
+            background-color: var(--container-bg);
             border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 30px var(--shadow-color);
             backdrop-filter: blur(5px);
-            border: 2px solid rgba(255, 255, 255, 0.5);
+            border: 2px solid var(--container-border);
+            transition: all 0.3s ease;
         }
 
         h1 {
-            color: #4568dc;
+            color: var(--heading-color);
             text-align: center;
             font-size: 2.5rem;
             margin-bottom: 30px;
             font-weight: 700;
+            transition: color 0.3s ease;
         }
 
         h2 {
-            color: #5a3f93;
+            color: var(--subheading-color);
             font-size: 1.8rem;
             margin-top: 30px;
             margin-bottom: 15px;
-            border-bottom: 2px solid #eee;
+            border-bottom: 2px solid var(--heading-border);
             padding-bottom: 10px;
+            transition: color 0.3s ease;
         }
 
         .emoji {
@@ -61,6 +90,7 @@
             font-size: 1.05rem;
             font-weight: 400;
             letter-spacing: -0.2px;
+            transition: color 0.3s ease;
         }
 
         ul {
@@ -72,11 +102,12 @@
         }
 
         .highlight {
-            background-color: #f8f9fa;
+            background-color: var(--highlight-bg);
             padding: 15px;
             border-radius: 8px;
             margin: 20px 0;
-            border-left: 4px solid #4568dc;
+            border-left: 4px solid var(--highlight-border);
+            transition: background-color 0.3s ease, border-left 0.3s ease;
         }
 
         .bold {
@@ -86,8 +117,9 @@
         .footer {
             text-align: center;
             margin-top: 40px;
-            color: #666;
+            color: var(--footer-color);
             font-style: italic;
+            transition: color 0.3s ease;
         }
 
         .section {
@@ -98,7 +130,7 @@
             position: fixed;
             bottom: 20px;
             right: 20px;
-            background-color: rgba(69, 104, 220, 0.8);
+            background-color: var(--back-btn-bg);
             color: white;
             width: 50px;
             height: 50px;
@@ -107,14 +139,32 @@
             line-height: 50px;
             font-size: 20px;
             text-decoration: none;
-            transition: background-color 0.3s;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            z-index: 98;
         }
 
         .back-to-top:hover {
             transform: translateY(-3px);
-            background-color: rgba(69, 104, 220, 1);
+            background-color: var(--back-btn-hover-bg);
             box-shadow: 0 6px 12px rgba(69, 104, 220, 0.4);
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-color);
+            transition: transform 0.3s ease;
+            z-index: 99;
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(30deg);
         }
 
         @media (max-width: 768px) {
@@ -155,6 +205,7 @@
     </style>
 </head>
 <body>
+    <button class="theme-toggle" id="themeToggle">🌓</button>
     <div class="container">
         <h1><span class="emoji">📜</span> 개인정보처리방침</h1>
 
@@ -299,5 +350,29 @@
     </div>
 
     <a href="#" class="back-to-top">↑</a>
+
+    <script>
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            html.setAttribute('data-theme', savedTheme);
+            updateToggleIcon(savedTheme);
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateToggleIcon(newTheme);
+        });
+        
+        function updateToggleIcon(theme) {
+            themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+    </script>
 </body>
-</html> 
+</html>

@@ -1,10 +1,36 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>인증 성공</title>
     <style>
+        :root {
+            --bg-gradient: linear-gradient(to bottom right, #1e1e2f, #2c2c3c);
+            --container-bg: rgba(35, 35, 50, 0.8);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-color: #e4e4e4;
+            --heading-color: #61dafb;
+            --message-color: #cccccc;
+            --button-gradient: linear-gradient(45deg, #3a7bd5, #4889e3);
+            --button-hover-gradient: linear-gradient(45deg, #4889e3, #5a9cf2);
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --button-hover-shadow: rgba(58, 123, 213, 0.4);
+        }
+
+        html[data-theme="light"] {
+            --bg-gradient: linear-gradient(to bottom right, #ffffff, #fdf1ec);
+            --container-bg: rgba(255, 255, 255, 0.85);
+            --border-color: rgba(0, 0, 0, 0.05);
+            --text-color: #333333;
+            --heading-color: #ff7d45;
+            --message-color: #555555;
+            --button-gradient: linear-gradient(45deg, #ff7d45, #ffa270);
+            --button-hover-gradient: linear-gradient(45deg, #ffa270, #ffb391);
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --button-hover-shadow: rgba(255, 125, 69, 0.3);
+        }
+
         body {
             font-family: 'Poppins', 'Noto Sans KR', sans-serif;
             margin: 0;
@@ -13,29 +39,24 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background: linear-gradient(45deg, #a8ff78, #78ffd6, #78ffd6, #56CCF2, #2F80ED);
-            background-size: 400% 400%;
-            animation: gradientBG 20s ease infinite;
-        }
-
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            transition: all 0.3s ease;
         }
 
         .container {
-            background-color: rgba(245, 245, 245, 0.9);
-            border-radius: 20px;
+            background-color: var(--container-bg);
+            border-radius: 16px;
             padding: 40px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 30px var(--shadow-color);
             text-align: center;
             max-width: 500px;
             width: 90%;
             backdrop-filter: blur(5px);
             transform: translateY(0);
             animation: float 8s ease-in-out infinite;
-            border: 2px solid rgba(255, 255, 255, 0.5);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
         }
 
         @media (max-width: 576px) {
@@ -64,24 +85,26 @@
         }
 
         h1 {
-            color: #27ae60;
+            color: var(--heading-color);
             font-size: 2.5rem;
             margin-bottom: 15px;
             font-weight: 700;
+            transition: color 0.3s ease;
         }
 
         .success-message {
-            color: #555;
+            color: var(--message-color);
             font-size: 1.1rem;
             line-height: 1.6;
             margin-bottom: 25px;
             font-weight: 400;
             letter-spacing: -0.2px;
+            transition: color 0.3s ease;
         }
 
         .cta-button {
             display: inline-block;
-            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            background: var(--button-gradient);
             color: white;
             text-decoration: none;
             padding: 12px 25px;
@@ -91,16 +114,35 @@
             margin-top: 15px;
             border: none;
             cursor: pointer;
-            box-shadow: 0 4px 8px rgba(39, 174, 96, 0.3);
+            box-shadow: 0 4px 8px var(--shadow-color);
         }
 
         .cta-button:hover {
             transform: translateY(-3px);
-            box-shadow: 0 6px 12px rgba(39, 174, 96, 0.4);
+            box-shadow: 0 6px 12px var(--button-hover-shadow);
+            background: var(--button-hover-gradient);
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-color);
+            transition: transform 0.3s ease;
+            z-index: 100;
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(30deg);
         }
     </style>
 </head>
 <body>
+    <button class="theme-toggle" id="themeToggle">🌓</button>
     <div class="container">
         <div class="success-icon">🎉</div>
         <h1>인증 성공!</h1>
@@ -110,5 +152,31 @@
         </div>
         <a href="https://discord.com/channels/@me" class="cta-button">디스코드로 돌아가기</a>
     </div>
+
+    <script>
+        // 테마 토글 기능
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        
+        // 저장된 테마 확인
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            html.setAttribute('data-theme', savedTheme);
+            updateToggleIcon(savedTheme);
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateToggleIcon(newTheme);
+        });
+        
+        function updateToggleIcon(theme) {
+            themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+    </script>
 </body>
 </html>
