@@ -19,7 +19,7 @@ exports.sendWebhookLog = async (guildId, title, description, color, fields = [],
 
         
         const config = require(path.join(__dirname, '../../config.json'));
-        const webhookUrl = dbService.getWebhookUrl(guildId);
+        const webhookUrl = await dbService.getWebhookUrl(guildId);
         const ownerWebhookUrl = config.ownerLogWebhook;
         
         if (!webhookUrl && !ownerWebhookUrl) return false;
@@ -43,18 +43,21 @@ exports.sendWebhookLog = async (guildId, title, description, color, fields = [],
         }
         
         let serverName = '알 수 없음';
-        const conn = dbService.loadDB(guildId);
-        if (conn) {
-            try {
-                const result = conn.prepare("SELECT name FROM Info").get();
-                if (result && result.name) {
-                    serverName = result.name;
-                }
-            } catch (err) {
-                console.error('서버 이름 조회 실패:', err);
-            } finally {
-                if (conn) conn.close();
+        try {
+            const conn = dbService.loadDB(guildId);
+            if (conn) {
+                return new Promise((resolve, reject) => {
+                    conn.get("SELECT name FROM Info", [], (err, row) => {
+                        if (!err && row && row.name) {
+                            serverName = row.name;
+                        }
+                        conn.close();
+                        resolve();
+                    });
+                });
             }
+        } catch (err) {
+            console.error('서버 이름 조회 실패:', err);
         }
         
         if (userInfo) {

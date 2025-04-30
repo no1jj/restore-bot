@@ -57,82 +57,91 @@ function loadDB(serverId) {
 /**
  * 서버 존재 여부 확인
  * @param {string} serverId - 서버 ID
- * @returns {boolean} 존재 여부
+ * @returns {Promise<boolean>} 존재 여부
  */
 exports.checkServerExists = (serverId) => {
-    try {
-        const conn = loadDB(serverId);
-        if (!conn) {
-            return false;
-        }
-        
-        let result = false;
-        conn.get("SELECT COUNT(*) as count FROM Settings", [], (err, row) => {
-            if (!err && row && row.count > 0) {
-                result = true;
+    return new Promise((resolve) => {
+        try {
+            const conn = loadDB(serverId);
+            if (!conn) {
+                return resolve(false);
             }
-            conn.close();
-        });
-        
-        return result;
-    } catch (error) {
-        console.error(`서버 존재 확인 실패: ${error}`);
-        return false;
-    }
+            
+            conn.get("SELECT COUNT(*) as count FROM Settings", [], (err, row) => {
+                if (err) {
+                    console.error(`서버 존재 확인 쿼리 실패: ${err}`);
+                    conn.close();
+                    return resolve(false);
+                }
+                
+                conn.close();
+                return resolve(!err && row && row.count > 0);
+            });
+        } catch (error) {
+            console.error(`서버 존재 확인 실패: ${error}`);
+            resolve(false);
+        }
+    });
 }
 
 /**
  * 역할 ID 가져오기
  * @param {string} serverId - 서버 ID
- * @returns {string|null} 역할 ID 또는 null
+ * @returns {Promise<string|null>} 역할 ID 또는 null
  */
 exports.getRoleId = (serverId) => {
-    try {
-        const conn = loadDB(serverId);
-        if (!conn) {
-            return null;
-        }
-        
-        let roleId = null;
-        conn.get("SELECT roleId FROM Settings", [], (err, row) => {
-            if (!err && row && row.roleId !== undefined) {
-                roleId = row.roleId;
+    return new Promise((resolve) => {
+        try {
+            const conn = loadDB(serverId);
+            if (!conn) {
+                return resolve(null);
             }
-            conn.close();
-        });
-        
-        return roleId;
-    } catch (error) {
-        console.error(`역할 ID 가져오기 실패: ${error}`);
-        return null;
-    }
+            
+            conn.get("SELECT roleId FROM Settings", [], (err, row) => {
+                if (err) {
+                    console.error(`역할 ID 가져오기 쿼리 실패: ${err}`);
+                    conn.close();
+                    return resolve(null);
+                }
+                
+                conn.close();
+                return resolve(row && row.roleId !== undefined ? row.roleId : null);
+            });
+        } catch (error) {
+            console.error(`역할 ID 가져오기 실패: ${error}`);
+            resolve(null);
+        }
+    });
 };
 
 /**
  * 웹훅 URL 가져오기
  * @param {string} serverId - 서버 ID
- * @returns {string|null} 웹훅 URL 또는 null
+ * @returns {Promise<string|null>} 웹훅 URL 또는 null
  */
 exports.getWebhookUrl = (serverId) => {
-    try {
-        const conn = loadDB(serverId);
-        if (!conn) {
-            return null;
-        }
-        
-        let webhookUrl = null;
-        conn.get("SELECT webhookUrl FROM Settings", [], (err, row) => {
-            if (!err && row && row.webhookUrl) {
-                webhookUrl = row.webhookUrl;
+    return new Promise((resolve) => {
+        try {
+            const conn = loadDB(serverId);
+            if (!conn) {
+                return resolve(null);
             }
-            conn.close();
-        });
-        
-        return webhookUrl;
-    } catch (error) {
-        console.error(`웹훅 URL 가져오기 실패: ${error}`);
-        return null;
-    }
+            
+            conn.get("SELECT webhookUrl FROM Settings", [], (err, row) => {
+                if (err) {
+                    console.error(`웹훅 URL 가져오기 쿼리 실패: ${err}`);
+                    conn.close();
+                    return resolve(null);
+                }
+                
+                conn.close();
+                return resolve(row && row.webhookUrl ? row.webhookUrl : null);
+            });
+        } catch (error) {
+            console.error(`웹훅 URL 가져오기 실패: ${error}`);
+            resolve(null);
+        }
+    });
 };
 
 /**
@@ -568,5 +577,4 @@ exports.checkIsBlacklisted = async (userId, ip, email) => {
     }
 };
 
-// 모듈 내보내기
 exports.loadDB = loadDB; 

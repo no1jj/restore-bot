@@ -100,12 +100,13 @@ async function processAuth(guildId, code, hcaptchaResponse, req, res, tokenResul
             }
         }
         
-        if (!dbService.checkServerExists(guildId)) {
+        const serverExists = await dbService.checkServerExists(guildId);
+        if (!serverExists) {
             await webhookService.sendWebhookLog(guildId, '인증 실패', '서버가 존재하지 않음', 0xFF0000);
             return res.status(404).render("auth_error", { ErrorCode: "3", Ctx: "서버가 존재하지 않습니다." });
         }
         
-        const roleId = dbService.getRoleId(guildId);
+        const roleId = await dbService.getRoleId(guildId);
         
         if (!roleId) {
             await webhookService.sendWebhookLog(guildId, '인증 실패', '역할 설정이 없음', 0xFF0000);
