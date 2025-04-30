@@ -51,7 +51,7 @@ RestoreBot은 디스코드 서버 관리자를 위한 종합적인 보안 및 �
 
 ### 요구 사항
 - Node.js v14 이상
-- Python 3.8 이상
+- Python 3.11 이상
 - Discord.js v14 이상
 - SQLite3
 
