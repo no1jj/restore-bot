@@ -291,17 +291,23 @@ class SettingsSelect(Select):
             if settings[6]:
                 try:
                     channel = interaction.guild.get_channel(int(settings[6]))
-                    log_channel_name = f"#{channel.name}" if channel else "설정됨"
+                    if channel is None:
+                        log_channel_name = "설정되지 않음"
+                    else:
+                        log_channel_name = f"#{channel.name}"
                 except:
-                    log_channel_name = "설정됨"
+                    log_channel_name = "설정되지 않음"
             
             role_name = "설정되지 않음"
             if settings[3]:
                 try:
                     role = interaction.guild.get_role(int(settings[3]))
-                    role_name = f"@{role.name}" if role else "설정됨"
+                    if role is None:
+                        role_name = "설정되지 않음"
+                    else:
+                        role_name = f"@{role.name}"
                 except:
-                    role_name = "설정됨"
+                    role_name = "설정되지 않음"
             
             conn.close()
             
@@ -1506,45 +1512,79 @@ class ServerRegisterModal(Modal):
             if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]+$', password):
                 await helper.ErrorEmbed(interaction, "비밀번호는 최소 1개의 대문자, 소문자, 숫자, 특수문자(@$!%*?&#)를 포함해야 합니다.")
                 return
-            
-            common_patterns = ['password', '123456', 'qwerty', 'admin', '1234']
-            for pattern in common_patterns:
-                if pattern in password.lower():
-                    await helper.ErrorEmbed(interaction, "비밀번호에 너무 흔한 패턴이 포함되어 있습니다.")
-                    return
-            
+  
             config = helper.LoadConfig()
-            timestamp = datetime.now(pytz.timezone("Asia/Seoul"))
             
             try:
-                db = sqlite3.connect(os.path.join(config.DBFolderPath, f"{self.server_id}.db"))
-                cursor = db.cursor()
+                conn = sqlite3.connect(os.path.join(config.DBPath))
+                cursor = conn.cursor()
+                cursor.execute("SELECT COUNT(*) FROM Keys WHERE serverId = ?", (str(interaction.guild_id),))
+                server_count = cursor.fetchone()[0]
+                
+                if server_count > 0:
+                    conn.close()
+                    await helper.ErrorEmbed(interaction, "이 서버는 이미 등록되어 있습니다.")
+                    return
+                
                 cursor.execute("SELECT COUNT(*) FROM WebPanel WHERE id = ?", (id,))
                 count = cursor.fetchone()[0]
-                db.close()
+                conn.close()
                 
                 if count > 0:
                     await helper.ErrorEmbed(interaction, "이미 사용 중인 아이디입니다. 다른 아이디를 선택해주세요.")
                     return
             except Exception as e:
-                print(f"아이디 중복 확인 중 오류 발생: {e}")
+                print(f"데이터베이스 확인 중 오류 발생: {e}")
+                await helper.ErrorEmbed(interaction, f"데이터베이스 확인 중 오류가 발생했습니다: {str(e)}")
+                return
             
-            salt = uuid.uuid4().hex
-            hashedPassword = hashlib.sha256(password.encode() + salt.encode()).hexdigest()
+            timestamp = datetime.now(pytz.timezone("Asia/Seoul"))
             
-            await helper.AddToDB("WebPanel", "id", id)
-            await helper.AddToDB("WebPanel", "password", hashedPassword)
-            await helper.AddToDB("WebPanel", "salt", salt)
-            await helper.AddToDB("WebPanel", "serverId", self.server_id)
-            await interaction.user.dm_channel.send(embed=discord.Embed(title="웹패널 정보 입력 완료", description=f"웹패널 정보가 성공적으로 입력되었습니다.\n\n아이디: {id}\n비밀번호: {password}", color=Color.green()))
+            try:
+                key = helper.GenRandom(16)
+                helper.GenServerDB(str(interaction.guild_id), interaction.guild.name, timestamp.strftime("%Y-%m-%d %H:%M:%S"), key)
+                
+                conn = sqlite3.connect(os.path.join(config.DBPath))
+                cursor = conn.cursor()
+                cursor.execute("INSERT INTO Keys (Key, serverId) VALUES (?, ?)", (key, str(interaction.guild_id)))
+                conn.commit()
+                conn.close()
+            except Exception as e:
+                print(f"서버 등록 중 오류 발생: {e}")
+                await helper.ErrorEmbed(interaction, f"서버 등록 중 오류가 발생했습니다: {str(e)}")
+                return
             
-            key = helper.GenRandom(16)
-            helper.GenServerDB(str(interaction.guild_id), interaction.guild.name, timestamp.strftime("%Y-%m-%d %H:%M:%S"), key)
-            conn = sqlite3.connect(os.path.join(config.DBPath))
-            cursor = conn.cursor()
-            cursor.execute("INSERT INTO Keys (Key, serverId) VALUES (?, ?)", (key, str(interaction.guild_id)))
-            conn.commit()
-            conn.close()
+            try:
+                salt = uuid.uuid4().hex
+                hashedPassword = hashlib.sha256(password.encode() + salt.encode()).hexdigest()
+                
+                try:
+                    salt = uuid.uuid4().hex
+                    hashedPassword = hashlib.sha256(password.encode() + salt.encode()).hexdigest()
+                    
+                    conn = sqlite3.connect(os.path.join(config.DBPath))
+                    cursor = conn.cursor()
+                    cursor.execute("""
+                        INSERT INTO WebPanel (id, password, salt, serverId) 
+                        VALUES (?, ?, ?, ?)
+                    """, (id, hashedPassword, salt, self.server_id))
+                    conn.commit()
+                    conn.close()
+                except Exception as e:
+                    print(f"웹패널 정보 저장 중 오류 발생: {e}")
+                    await helper.ErrorEmbed(interaction, f"웹패널 정보 저장 중 오류가 발생했습니다: {str(e)}")
+                    return
+            except Exception as e:
+                print(f"웹패널 정보 저장 중 오류 발생: {e}")
+                await helper.ErrorEmbed(interaction, f"웹패널 정보 저장 중 오류가 발생했습니다: {str(e)}")
+                return
+            
+            try:
+                if interaction.user.dm_channel is None:
+                    await interaction.user.create_dm()
+                await interaction.user.dm_channel.send(embed=discord.Embed(title="웹패널 정보 입력 완료", description=f"웹패널 정보가 성공적으로 입력되었습니다.\n\n아이디: `{id}`\n비밀번호: `{password}`", color=Color.green()))
+            except Exception as e:
+                print(f"DM 전송 중 오류 발생: {e}")
             
             fields = [
                 ("서버 이름", f"```{interaction.guild.name}```"),
