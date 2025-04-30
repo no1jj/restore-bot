@@ -129,6 +129,10 @@ def GenServerDB(serverId: str, name: str, date: str, key: str):
                                 ip TEXT,
                                 serviceToken TEXT
                             )''')
+            cursor.execute('''CREATE TABLE IF NOT EXISTS WebPanel (
+                                id TEXT NOT NULL,
+                                password TEXT NOT NULL
+                            )''')
             cursor.execute('''INSERT INTO Info (
                                 name, id, date, key) 
                                 VALUES (?, ?, ?, ?)''', 
