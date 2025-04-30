@@ -271,44 +271,103 @@ class PrivacyPolicyView(View):
             await interaction.response.defer()
 
 class SettingsView(View):
-    def __init__(self, serverId: str):
+    def __init__(self, serverId: str, interaction: Interaction):
         super().__init__(timeout=None)
-        self.add_item(SettingsSelect(serverId))
+        self.add_item(SettingsSelect(serverId, interaction))
 
 class SettingsSelect(Select):
-    def __init__(self, serverId: str):
-        options = [
-            SelectOption(
-                label="🌐 IP 기록 여부",
-                value="아이피 기록",
-                description="IP 기록 여부를 설정합니다."
-            ),
-            SelectOption(
-                label="📧 이메일 기록 여부",
-                value="이메일 기록",
-                description="이메일 기록 여부를 설정합니다."
-            ),
-            SelectOption(
-                label="📝 로그 채널 설정",
-                value="로그 채널",
-                description="로그 채널을 설정합니다."
-            ),
-            SelectOption(
-                label="👑 인증 역할 설정",
-                value="인증 역할",
-                description="인증 역할을 설정합니다."
-            ),
-            SelectOption(
-                label="🔒 캡차 사용 여부",
-                value="캡차",
-                description="캡차 사용 여부를 설정합니다."
-            ),
-            SelectOption(
-                label="🛡️ VPN 차단 설정",
-                value="vpn차단",
-                description="인증시 VPN 사용 차단 여부를 설정합니다."
-            )
-        ]
+    def __init__(self, serverId: str, interaction: Interaction):
+        try:
+            conn = sqlite3.connect(os.path.join(helper.LoadConfig().DBFolderPath, f"{serverId}.db"))
+            cursor = conn.cursor()
+            
+            cursor.execute("SELECT loggingIp, loggingMail, webhookUrl, roleId, useCaptcha, blockVpn, loggingChannelId FROM Settings")
+            settings = cursor.fetchone()
+            
+            log_channel_name = "설정되지 않음"
+            if settings[6]:
+                try:
+                    channel = interaction.guild.get_channel(int(settings[6]))
+                    log_channel_name = f"#{channel.name}" if channel else "설정됨"
+                except:
+                    log_channel_name = "설정됨"
+            
+            role_name = "설정되지 않음"
+            if settings[3]:
+                try:
+                    role = interaction.guild.get_role(int(settings[3]))
+                    role_name = f"@{role.name}" if role else "설정됨"
+                except:
+                    role_name = "설정됨"
+            
+            conn.close()
+            
+            options = [
+                SelectOption(
+                    label="🌐 IP 기록 여부",
+                    value="아이피 기록",
+                    description=f"{'활성화' if settings[0] == 1 else '비활성화'}"
+                ),
+                SelectOption(
+                    label="📧 이메일 기록 여부",
+                    value="이메일 기록",
+                    description=f"{'활성화' if settings[1] == 1 else '비활성화'}"
+                ),
+                SelectOption(
+                    label="📝 로그 채널 설정",
+                    value="로그 채널",
+                    description=f"{log_channel_name}"
+                ),
+                SelectOption(
+                    label="👑 인증 역할 설정",
+                    value="인증 역할",
+                    description=f"{role_name}"
+                ),
+                SelectOption(
+                    label="🔒 캡차 사용 여부",
+                    value="캡차",
+                    description=f"{'활성화' if settings[4] == 1 else '비활성화'}"
+                ),
+                SelectOption(
+                    label="🛡️ VPN 차단 설정",
+                    value="vpn차단",
+                    description=f"{'활성화' if settings[5] == 1 else '비활성화'}"
+                )
+            ]
+        except Exception as e:
+            options = [
+                SelectOption(
+                    label="🌐 IP 기록 여부",
+                    value="아이피 기록",
+                    description="설정을 불러올 수 없습니다"
+                ),
+                SelectOption(
+                    label="📧 이메일 기록 여부",
+                    value="이메일 기록",
+                    description="설정을 불러올 수 없습니다"
+                ),
+                SelectOption(
+                    label="📝 로그 채널 설정",
+                    value="로그 채널",
+                    description="설정을 불러올 수 없습니다"
+                ),
+                SelectOption(
+                    label="👑 인증 역할 설정",
+                    value="인증 역할",
+                    description="설정을 불러올 수 없습니다"
+                ),
+                SelectOption(
+                    label="🔒 캡차 사용 여부",
+                    value="캡차",
+                    description="설정을 불러올 수 없습니다"
+                ),
+                SelectOption(
+                    label="🛡️ VPN 차단 설정",
+                    value="vpn차단",
+                    description="설정을 불러올 수 없습니다"
+                )
+            ]
+        
         super().__init__(placeholder="⚙️ 서버 설정", options=options)
 
     async def callback(self, interaction: Interaction):
@@ -360,6 +419,8 @@ class OnOffSelect(Select):
             if onOff == "on":
                 settings = values.get(self.selected)
                 helper.UpdateServerSettings(self.serverId, settings, True)
+                view = SettingsView(self.serverId, interaction)
+                await interaction.response.edit_message(view=view)
                 
                 await helper.SendEmbed(
                     interaction=interaction, 
@@ -370,6 +431,8 @@ class OnOffSelect(Select):
             elif onOff == "off":
                 settings = values.get(self.selected)
                 helper.UpdateServerSettings(self.serverId, settings, False)
+                view = SettingsView(self.serverId, interaction)
+                await interaction.response.edit_message(view=view)
                 
                 await helper.SendEmbed(
                     interaction=interaction, 
@@ -378,7 +441,7 @@ class OnOffSelect(Select):
                     color=Color.green()
                 )
             elif onOff == "back":
-                view = SettingsView(self.serverId)
+                view = SettingsView(self.serverId, interaction)
                 await interaction.response.edit_message(view=view)
         except Exception as e:
             await helper.ErrorEmbed(interaction, f"오류가 발생했습니다.\n\n{str(e)}")
@@ -400,6 +463,8 @@ class VRoleSelect(RoleSelect):
             roleId = interaction.data['values'][0]
             helper.UpdateServerSettings(self.serverId, "roleId", roleId)
             role = interaction.guild.get_role(int(roleId))
+            view = SettingsView(self.serverId, interaction)
+            await interaction.response.edit_message(view=view)
             
             await helper.SendEmbed(
                 interaction=interaction, 
@@ -431,6 +496,8 @@ class SChannelSelect(ChannelSelect):
             logWebhook = SyncWebhook.from_url(webhookUrl)
             helper.UpdateServerSettings(self.serverId, "loggingChannelId", channelId)
             helper.UpdateServerSettings(self.serverId, "webhookUrl", webhookUrl)
+            view = SettingsView(self.serverId, interaction)
+            await interaction.response.edit_message(view=view)
             
             await helper.SendEmbed(
                 interaction=interaction, 
@@ -455,7 +522,7 @@ class BackToSettingsButton(Button):
         super().__init__(label="뒤로 가기", style=discord.ButtonStyle.secondary)
 
     async def callback(self, interaction: Interaction):
-        view = SettingsView(self.serverId)
+        view = SettingsView(self.serverId, interaction)
         await interaction.response.edit_message(view=view)
 
 class AddOrDeleteView(View):

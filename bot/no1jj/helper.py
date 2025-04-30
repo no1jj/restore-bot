@@ -33,7 +33,7 @@ def GenRandom(length: int):
 
 async def CheckPermission(interaction: Interaction, owner: bool = False):  
     if owner:
-        if not interaction.user.id == config.ownerId:
+        if not str(interaction.user.id) == str(config.ownerId):
             await ErrorEmbed(
                 interaction=interaction,
                 error_message="이 명령어를 사용할 수 없습니다.."
@@ -133,6 +133,7 @@ def GenServerDB(serverId: str, name: str, date: str, key: str):
                                 name, id, date, key) 
                                 VALUES (?, ?, ?, ?)''', 
                             (str(name), str(serverId), str(date), str(key)))
+                            
             cursor.execute('''INSERT INTO Settings (
                                 loggingIp, loggingMail, webhookUrl, roleId, useCaptcha, blockVpn, loggingChannelId) 
                                 VALUES (?, ?, ?, ?, ?, ?, ?)''', 
