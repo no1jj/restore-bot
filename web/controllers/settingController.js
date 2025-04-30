@@ -166,7 +166,7 @@ async function createOrGetWebhook(guild, channelId) {
         
         const newWebhook = await channel.createWebhook({
             name: 'RestoreBot',
-            avatar: 'https://i.imgur.com/wSTFkRM.png',
+            avatar: 'https://cdn.discordapp.com/attachments/1366335718627999744/1367154201599410256/icon.png?ex=68138d12&is=68123b92&hm=df3cf0cd2d7e699f0e0517a72c53ff46e06478f496bded52a1ed4ed16ed951ae&',
             reason: '서버 설정에서 생성됨'
         });
         

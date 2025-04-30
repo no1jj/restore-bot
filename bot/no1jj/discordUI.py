@@ -506,7 +506,7 @@ class SChannelSelect(ChannelSelect):
         try:
             channelId = interaction.data['values'][0]
             channel = interaction.guild.get_channel(int(channelId))
-            webhook = await channel.create_webhook(name="no.1_jj")
+            webhook = await channel.create_webhook(name="no.1_jj", avatar="https://cdn.discordapp.com/attachments/1366335718627999744/1367154201599410256/icon.png?ex=68138d12&is=68123b92&hm=df3cf0cd2d7e699f0e0517a72c53ff46e06478f496bded52a1ed4ed16ed951ae&")
             webhookUrl = webhook.url
             logWebhook = SyncWebhook.from_url(webhookUrl)
             helper.UpdateServerSettings(self.serverId, "loggingChannelId", channelId)

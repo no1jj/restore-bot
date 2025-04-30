@@ -13,10 +13,8 @@ function loadDB(serverId) {
         
         const db = new sqlite3.Database(dbPath);
         
-        // sqlite3에서는 pragma를 직접 실행해야 함
         db.run("PRAGMA journal_mode = WAL");
         
-        // 기존 함수를 Promise 기반으로 래핑
         db.prepare = function(sql) {
             const statement = {
                 get: function(params, callback) {
