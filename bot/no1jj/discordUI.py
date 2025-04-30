@@ -1519,12 +1519,6 @@ class ServerRegisterModal(Modal):
                 conn = sqlite3.connect(os.path.join(config.DBPath))
                 cursor = conn.cursor()
                 cursor.execute("SELECT COUNT(*) FROM Keys WHERE serverId = ?", (str(interaction.guild_id),))
-                server_count = cursor.fetchone()[0]
-                
-                if server_count > 0:
-                    conn.close()
-                    await helper.ErrorEmbed(interaction, "이 서버는 이미 등록되어 있습니다.")
-                    return
                 
                 cursor.execute("SELECT COUNT(*) FROM WebPanel WHERE id = ?", (id,))
                 count = cursor.fetchone()[0]
