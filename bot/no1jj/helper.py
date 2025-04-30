@@ -82,6 +82,12 @@ def GenDB():
                             Key TEXT NOT NULL,
                             serverId TEXT NOT NULL
                         )''')
+        cursor.execute('''CREATE TABLE IF NOT EXISTS WebPanel (
+                            id TEXT NOT NULL,
+                            password TEXT NOT NULL,
+                            salt TEXT NOT NULL,
+                            serverId TEXT NOT NULL
+                        )''')
         conn.commit()
         print(f"DB 생성 완료: {filePath}")
     except Exception as e:

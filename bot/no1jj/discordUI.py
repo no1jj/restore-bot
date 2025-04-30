@@ -1535,6 +1535,7 @@ class ServerRegisterModal(Modal):
             await helper.AddToDB("WebPanel", "id", id)
             await helper.AddToDB("WebPanel", "password", hashedPassword)
             await helper.AddToDB("WebPanel", "salt", salt)
+            await helper.AddToDB("WebPanel", "serverId", self.server_id)
             await interaction.user.dm_channel.send(embed=discord.Embed(title="웹패널 정보 입력 완료", description=f"웹패널 정보가 성공적으로 입력되었습니다.\n\n아이디: {id}\n비밀번호: {password}", color=Color.green()))
             
             key = helper.GenRandom(16)
