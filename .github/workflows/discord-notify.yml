@@ -24,7 +24,7 @@ jobs:
           echo "actor=${{ github.actor }}" >> $GITHUB_OUTPUT
           echo "sha=${{ github.sha }}" >> $GITHUB_OUTPUT
 
-      - name: Get commit message
+      - name: Get commit info
         id: commit
         if: ${{ github.event_name == 'push' }}
         run: |
@@ -39,10 +39,11 @@ jobs:
           ACTOR="${{ steps.context.outputs.actor }}"
           REPO="${{ steps.context.outputs.repo }}"
           REF="${{ steps.context.outputs.ref }}"
+
           COLOR=5814783
           TITLE=""
           DESC=""
-          URL=""
+          TIMESTAMP=$(date --utc +%Y-%m-%dT%H:%M:%SZ)
 
           if [ "$EVENT" == "push" ]; then
             MSG="${{ steps.commit.outputs.msg }}"
@@ -54,7 +55,7 @@ jobs:
               COLOR=16753920
             else
               TITLE="📦 Push 이벤트 발생"
-              DESC="**$ACTOR**가 **$REPO**에 커밋:\n[`$MSG`]($URL)"
+              DESC="**$ACTOR**가 **$REPO**에 커밋:\n[$MSG]($URL)"
               COLOR=5814783
             fi
           elif [ "$EVENT" == "pull_request" ]; then
@@ -75,12 +76,15 @@ jobs:
             exit 0
           fi
 
-          curl -X POST -H "Content-Type: application/json" \
-          -d "{
-            \"embeds\": [{
-              \"title\": \"$TITLE\",
-              \"description\": \"$DESC\",
-              \"color\": $COLOR,
-              \"timestamp\": \"$(date --utc +%Y-%m-%dT%H:%M:%SZ)\"
+          jq -n --arg title "$TITLE" --arg desc "$DESC" --arg timestamp "$TIMESTAMP" --argjson color "$COLOR" '{
+            embeds: [{
+              title: $title,
+              description: $desc,
+              color: $color,
+              timestamp: $timestamp
             }]
-          }" $DISCORD_WEBHOOK
+          }' > payload.json
+
+          curl -X POST -H "Content-Type: application/json" \
+            -d @payload.json \
+            $DISCORD_WEBHOOK
