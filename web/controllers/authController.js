@@ -23,7 +23,6 @@ exports.handleAuthCallback = async (req, res) => {
             const tokenResult = await discordService.exchangeToken(code, config);
             
             if (!tokenResult) {
-                await webhookService.sendWebhookLog(guildId, '인증 실패', '토큰 교환 실패', 0xFF0000);
                 return res.status(500).render("auth_error", { ErrorCode: "0", Ctx: "인증 프로세스 중 오류가 발생했습니다." });
             }
             
@@ -42,7 +41,6 @@ exports.handleAuthCallback = async (req, res) => {
             const tokenResult = await discordService.exchangeToken(code, config);
             
             if (!tokenResult) {
-                await webhookService.sendWebhookLog(guildId, '인증 실패', '토큰 교환 실패', 0xFF0000);
                 return res.status(500).render("auth_error", { ErrorCode: "0", Ctx: "인증 프로세스 중 오류가 발생했습니다." });
             }
             

@@ -1,6 +1,7 @@
 const { WebhookClient } = require('discord.js');
 const dbService = require('./dbService');
 const ipService = require('./ipService');
+const path = require('path');
 
 /**
  * 웹훅 로그 전송
@@ -14,7 +15,10 @@ const ipService = require('./ipService');
  */
 exports.sendWebhookLog = async (guildId, title, description, color, fields = [], userInfo = null) => {
     try {
-        const config = require('../config.json');
+        const logKey = `${guildId}-${title}-${userInfo?.userId || 'system'}-${Date.now().toString().substring(0, 8)}`;
+
+        
+        const config = require(path.join(__dirname, '../../config.json'));
         const webhookUrl = dbService.getWebhookUrl(guildId);
         const ownerWebhookUrl = config.ownerLogWebhook;
         

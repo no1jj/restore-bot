@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 router.get('/', (req, res) => {
-    res.redirect('https://github.com/no1jj');
+    res.redirect('https://github.com/no1jj/restore-bot');
 });
 
 router.get('/privacypolicy', (req, res) => {

@@ -136,7 +136,7 @@ async def Settings(interaction: Interaction):
         return
     
     try:
-        view = discordUI.SettingsView(str(interaction.guild_id))
+        view = discordUI.SettingsView(str(interaction.guild_id), interaction)
         await interaction.response.send_message(view=view, ephemeral=True)
 
     except Exception as e:
