@@ -131,7 +131,8 @@ def GenServerDB(serverId: str, name: str, date: str, key: str):
                             )''')
             cursor.execute('''CREATE TABLE IF NOT EXISTS WebPanel (
                                 id TEXT NOT NULL,
-                                password TEXT NOT NULL
+                                password TEXT NOT NULL,
+                                salt TEXT NOT NULL
                             )''')
             cursor.execute('''INSERT INTO Info (
                                 name, id, date, key) 

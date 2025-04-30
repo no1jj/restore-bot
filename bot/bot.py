@@ -32,42 +32,9 @@ async def ServerRegister(interaction: Interaction):
         return
     
     try:
-        key = helper.GenRandom(16)
-        helper.GenServerDB(str(interaction.guild_id), interaction.guild.name, timestamp.strftime("%Y-%m-%d %H:%M:%S"), key)
-        conn = sqlite3.connect(os.path.join(config.DBPath))
-        cursor = conn.cursor()
-        cursor.execute("INSERT INTO Keys (Key, serverId) VALUES (?, ?)", (key, str(interaction.guild_id)))
-        conn.commit()
-        conn.close()
-        
-        fields = [
-            ("서버 이름", f"```{interaction.guild.name}```"),
-            ("서버 ID", f"```{interaction.guild_id}```"),
-            ("등록 시간", f"```{timestamp.strftime('%Y-%m-%d %H:%M:%S')}```"),
-            ("복구 키", f"```{key}```")
-        ]
-        
-        userInfo = [
-            ("등록자", f"<@{interaction.user.id}>"),
-            ("등록자 ID", f"`{interaction.user.id}`"),
-            ("등록자 이름", f"`{interaction.user.name}`")
-        ]
-        
-        await helper.SendOwnerLogWebhook(
-            "서버 등록",
-            f"{interaction.guild.name} 서버가 등록되었습니다.",
-            0x57F287,
-            fields,
-            userInfo
-        )
-        
-        await helper.SendEmbed(
-            interaction=interaction,
-            title="등록 완료",
-            description="서버가 등록되었습니다.",
-            color=Color.green(),
-            fields=fields
-        )
+        view = discordUI.ServerRegisterModal(str(interaction.guild_id))
+        await interaction.response.send_modal(view)
+
     except Exception as e:
         await helper.ErrorEmbed(interaction, f"오류가 발생했습니다: {str(e)}")
 
