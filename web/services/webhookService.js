@@ -46,7 +46,7 @@ exports.sendWebhookLog = async (guildId, title, description, color, fields = [],
         try {
             const conn = dbService.loadDB(guildId);
             if (conn) {
-                return new Promise((resolve, reject) => {
+                await new Promise((resolve) => {
                     conn.get("SELECT name FROM Info", [], (err, row) => {
                         if (!err && row && row.name) {
                             serverName = row.name;
@@ -102,13 +102,15 @@ ${description ? `${description}\n` : ''}`;
                     if (isBlacklisted) {
                         serverEmbed.description += `\n  • 📧 \`${userInfo.email || '이메일 없음'}\``;
                     } else if (!isWhitelisted) {
-                        if (dbService.checkLoggingMail(guildId) && userInfo.email) {
+                        const loggingMail = await dbService.checkLoggingMail(guildId);
+                        if (loggingMail && userInfo.email) {
                             serverEmbed.description += `\n  • 📧 \`${userInfo.email}\``;
                         }
                     }
                     
                     if (!isWhitelisted) {
-                        if (dbService.checkLoggingIp(guildId) && userInfo.ip) {
+                        const loggingIp = await dbService.checkLoggingIp(guildId);
+                        if (loggingIp && userInfo.ip) {
                             serverEmbed.description += `\n\n🌐 **IP 정보**
   • 🔍 \`${userInfo.ip}\``;
                             
@@ -141,7 +143,8 @@ ${description ? `${description}\n` : ''}`;
   • 🆔 \`${userInfo.userId || '알 수 없음'}\``;
                     
                     if (!isWhitelisted) {
-                        if (dbService.checkLoggingIp(guildId) && userInfo.ip) {
+                        const loggingIp = await dbService.checkLoggingIp(guildId);
+                        if (loggingIp && userInfo.ip) {
                             serverEmbed.description += `\n\n🌐 **IP 정보**
   • 🔍 \`${userInfo.ip || '알 수 없음'}\``;
                         }

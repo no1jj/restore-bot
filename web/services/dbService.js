@@ -147,109 +147,121 @@ exports.getWebhookUrl = (serverId) => {
 /**
  * IP 로깅 설정 확인
  * @param {string} serverId - 서버 ID
- * @returns {boolean} 로깅 여부
+ * @returns {Promise<boolean>} 로깅 여부
  */
 exports.checkLoggingIp = (serverId) => {
-    try {
-        const conn = loadDB(serverId);
-        if (!conn) {
-            return false;
-        }
-        
-        let isLoggingIp = false;
-        conn.get("SELECT loggingIp FROM Settings", [], (err, row) => {
-            if (!err && row && row.loggingIp !== undefined) {
-                isLoggingIp = row.loggingIp === 1;
+    return new Promise((resolve) => {
+        try {
+            const conn = loadDB(serverId);
+            if (!conn) {
+                return resolve(false);
             }
-            conn.close();
-        });
-        
-        return isLoggingIp;
-    } catch (error) {
-        console.error(`IP 로깅 설정 확인 실패: ${error}`);
-        return false;
-    }
+            
+            conn.get("SELECT loggingIp FROM Settings", [], (err, row) => {
+                if (err) {
+                    console.error(`IP 로깅 설정 확인 쿼리 실패: ${err}`);
+                    conn.close();
+                    return resolve(false);
+                }
+                
+                conn.close();
+                return resolve(!err && row && row.loggingIp !== undefined ? row.loggingIp === 1 : false);
+            });
+        } catch (error) {
+            console.error(`IP 로깅 설정 확인 실패: ${error}`);
+            resolve(false);
+        }
+    });
 };
 
 /**
  * 이메일 로깅 설정 확인
  * @param {string} serverId - 서버 ID
- * @returns {boolean} 로깅 여부
+ * @returns {Promise<boolean>} 로깅 여부
  */
 exports.checkLoggingMail = (serverId) => {
-    try {
-        const conn = loadDB(serverId);
-        if (!conn) {
-            return false;
-        }
-        
-        let isLoggingMail = false;
-        conn.get("SELECT loggingMail FROM Settings", [], (err, row) => {
-            if (!err && row && row.loggingMail !== undefined) {
-                isLoggingMail = row.loggingMail === 1;
+    return new Promise((resolve) => {
+        try {
+            const conn = loadDB(serverId);
+            if (!conn) {
+                return resolve(false);
             }
-            conn.close();
-        });
-        
-        return isLoggingMail;
-    } catch (error) {
-        console.error(`이메일 로깅 설정 확인 실패: ${error}`);
-        return false;
-    }
+            
+            conn.get("SELECT loggingMail FROM Settings", [], (err, row) => {
+                if (err) {
+                    console.error(`이메일 로깅 설정 확인 쿼리 실패: ${err}`);
+                    conn.close();
+                    return resolve(false);
+                }
+                
+                conn.close();
+                return resolve(!err && row && row.loggingMail !== undefined ? row.loggingMail === 1 : false);
+            });
+        } catch (error) {
+            console.error(`이메일 로깅 설정 확인 실패: ${error}`);
+            resolve(false);
+        }
+    });
 };
 
 /**
  * VPN 차단 설정 확인
  * @param {string} serverId - 서버 ID
- * @returns {boolean} 차단 여부
+ * @returns {Promise<boolean>} 차단 여부
  */
 exports.checkBlockVpn = (serverId) => {
-    try {
-        const conn = loadDB(serverId);
-        if (!conn) {
-            return false;
-        }
-        
-        let isBlockVpn = false;
-        conn.get("SELECT blockVpn FROM Settings", [], (err, row) => {
-            if (!err && row && row.blockVpn !== undefined) {
-                isBlockVpn = row.blockVpn === 1;
+    return new Promise((resolve) => {
+        try {
+            const conn = loadDB(serverId);
+            if (!conn) {
+                return resolve(false);
             }
-            conn.close();
-        });
-        
-        return isBlockVpn;
-    } catch (error) {
-        console.error(`VPN 차단 설정 확인 실패: ${error}`);
-        return false;
-    }
+            
+            conn.get("SELECT blockVpn FROM Settings", [], (err, row) => {
+                if (err) {
+                    console.error(`VPN 차단 설정 확인 쿼리 실패: ${err}`);
+                    conn.close();
+                    return resolve(false);
+                }
+                
+                conn.close();
+                return resolve(!err && row && row.blockVpn !== undefined ? row.blockVpn === 1 : false);
+            });
+        } catch (error) {
+            console.error(`VPN 차단 설정 확인 실패: ${error}`);
+            resolve(false);
+        }
+    });
 };
 
 /**
  * 캡챠 사용 설정 확인
  * @param {string} serverId - 서버 ID
- * @returns {boolean} 사용 여부
+ * @returns {Promise<boolean>} 사용 여부
  */
 exports.checkUsingCaptcha = (serverId) => {
-    try {
-        const conn = loadDB(serverId);
-        if (!conn) {
-            return false;
-        }
-        
-        let isUsingCaptcha = false;
-        conn.get("SELECT useCaptcha FROM Settings", [], (err, row) => {
-            if (!err && row && row.useCaptcha !== undefined) {
-                isUsingCaptcha = row.useCaptcha === 1;
+    return new Promise((resolve) => {
+        try {
+            const conn = loadDB(serverId);
+            if (!conn) {
+                return resolve(false);
             }
-            conn.close();
-        });
-        
-        return isUsingCaptcha;
-    } catch (error) {
-        console.error(`캡챠 사용 설정 확인 실패: ${error}`);
-        return false;
-    }
+            
+            conn.get("SELECT useCaptcha FROM Settings", [], (err, row) => {
+                if (err) {
+                    console.error(`캡챠 사용 설정 확인 쿼리 실패: ${err}`);
+                    conn.close();
+                    return resolve(false);
+                }
+                
+                conn.close();
+                return resolve(!err && row && row.useCaptcha !== undefined ? row.useCaptcha === 1 : false);
+            });
+        } catch (error) {
+            console.error(`캡챠 사용 설정 확인 실패: ${error}`);
+            resolve(false);
+        }
+    });
 };
 
 /**

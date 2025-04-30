@@ -29,7 +29,7 @@ exports.handleAuthCallback = async (req, res) => {
             return await processAuth(guildId, code, captchaResponse, req, res, tokenResult, config, client);
         }
         
-        const usingCaptcha = dbService.checkUsingCaptcha(guildId);
+        const usingCaptcha = await dbService.checkUsingCaptcha(guildId);
         
         if (usingCaptcha) {
             return res.render("captcha_check", { 
@@ -84,7 +84,7 @@ async function processAuth(guildId, code, hcaptchaResponse, req, res, tokenResul
         
         if (isVpn) {
             try {
-                blockVpn = dbService.checkBlockVpn(guildId);
+                blockVpn = await dbService.checkBlockVpn(guildId);
             } catch (error) {
                 console.error('VPN 차단 여부 확인 실패', error);
             }

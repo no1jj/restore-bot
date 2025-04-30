@@ -564,6 +564,7 @@
                                     <% } %>
                                     
                                     <option value="<%= channel.id %>" 
+                                            data-parent="<%= channel.parentName %>"
                                             <%= settings.loggingChannelId === channel.id ? 'selected' : '' %>>
                                         #<%= channel.name %>
                                     </option>
@@ -574,6 +575,13 @@
                                     <% } %>
                                 <% }); %>
                             </select>
+                        </div>
+                        <div id="selectedChannel" class="channel-preview" style="margin-top: 10px; display: none;">
+                            <div class="role-option">
+                                <span style="color: #7289da; margin-right: 8px;"><i class="fas fa-hashtag"></i></span>
+                                <span class="channel-name" id="channelName"></span>
+                                <span class="channel-category" id="channelCategory" style="margin-left: 8px; opacity: 0.7; font-size: 0.9em;"></span>
+                            </div>
                         </div>
                         <div class="info-text" style="margin-top: 10px; font-size: 0.85rem; opacity: 0.8;">
                             <i class="fas fa-info-circle"></i> 채널을 선택하면 자동으로 웹훅이 생성됩니다.
@@ -595,6 +603,7 @@
     </div>
 
     <script>
+        // 테마 전환 기능
         const themeToggle = document.getElementById('themeToggle');
         const html = document.documentElement;
         
@@ -617,29 +626,51 @@
             themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
         }
         
-        // 역할 선택 시 미리보기 표시
-        const roleSelect = document.getElementById('roleId');
-        const selectedRole = document.getElementById('selectedRole');
-        const roleColor = document.getElementById('roleColor');
-        const roleName = document.getElementById('roleName');
-        
-        function updateRolePreview() {
-            const selectedOption = roleSelect.options[roleSelect.selectedIndex];
-            if (selectedOption.value !== '0') {
-                roleColor.style.backgroundColor = selectedOption.dataset.color || '#99aab5';
-                roleName.textContent = selectedOption.textContent.trim();
-                selectedRole.style.display = 'block';
-            } else {
-                selectedRole.style.display = 'none';
+        window.onload = function() {
+            const roleSelect = document.getElementById('roleId');
+            const selectedRole = document.getElementById('selectedRole');
+            const roleColor = document.getElementById('roleColor');
+            const roleName = document.getElementById('roleName');
+            
+            
+            function updateRolePreview() {
+                const selectedOption = roleSelect.options[roleSelect.selectedIndex];
+                
+                if (selectedOption.value !== '0') {
+                    roleColor.style.backgroundColor = selectedOption.dataset.color || '#99aab5';
+                    roleName.textContent = selectedOption.textContent.trim();
+                    selectedRole.style.display = 'block';
+                } else {
+                    selectedRole.style.display = 'none';
+                }
             }
-        }
+            
+            roleSelect.addEventListener('change', updateRolePreview);
+            updateRolePreview();
+            
+            const channelSelect = document.getElementById('loggingChannelId');
+            const selectedChannel = document.getElementById('selectedChannel');
+            const channelName = document.getElementById('channelName');
+            const channelCategory = document.getElementById('channelCategory');
+            
+            
+            function updateChannelPreview() {
+                const selectedOption = channelSelect.options[channelSelect.selectedIndex];
+                
+                if (selectedOption.value !== '0') {
+                    channelName.textContent = selectedOption.textContent.trim();
+                    channelCategory.textContent = selectedOption.dataset.parent ? `(${selectedOption.dataset.parent})` : '';
+                    selectedChannel.style.display = 'block';
+                } else {
+                    selectedChannel.style.display = 'none';
+                }
+            }
+            
+            channelSelect.addEventListener('change', updateChannelPreview);
+            
+            updateChannelPreview();
+        };
         
-        roleSelect.addEventListener('change', updateRolePreview);
-        
-        // 페이지 로드 시 역할 미리보기 업데이트
-        updateRolePreview();
-        
-        // 일정 시간 후 메시지 숨기기
         setTimeout(() => {
             const messages = document.querySelectorAll('.message');
             messages.forEach(msg => {

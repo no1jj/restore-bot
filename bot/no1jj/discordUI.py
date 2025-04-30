@@ -53,7 +53,7 @@ class SAuthButton(Button):
     async def callback(self, interaction: Interaction):
         serverId = self.serverId or str(interaction.guild_id)
         config = helper.LoadConfig()
-        if interaction.user.id == config.ownerId:
+        if str(interaction.user.id) == str(config.ownerId):
             try:
                 filePath = os.path.join(config.DBFolderPath, f"{serverId}.db")
                 conn = sqlite3.connect(filePath)
@@ -277,6 +277,12 @@ class SettingsView(View):
     def __init__(self, serverId: str, interaction: Interaction):
         super().__init__(timeout=None)
         self.add_item(SettingsSelect(serverId, interaction))
+        self.add_item(WebPanelButton())
+
+class WebPanelButton(Button):
+    def __init__(self):
+        url = helper.LoadConfig().domain + "/setting"
+        super().__init__(label="웹패널", style=discord.ButtonStyle.link, url=url)
 
 class SettingsSelect(Select):
     def __init__(self, serverId: str, interaction: Interaction):
