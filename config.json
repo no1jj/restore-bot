@@ -10,5 +10,7 @@
     "ownerLogWebhook": "오너로그웹훅URL",
     "hCaptchaSiteKey": "hCaptcha사이트키",
     "hCaptchaSecretKey": "hCaptcha시크릿키",
-    "vpnApiKey": "VPN확인API키"
+    "vpnApiKey": "VPN확인API키",
+    "sessionSecret": "JKHFkHJKLFnklhoug9odfuklh",
+    "nodeEnv": "development"
   }

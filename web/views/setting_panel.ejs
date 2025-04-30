@@ -18,57 +18,107 @@
             --button-save: #4568dc;
             --button-danger: #dc4545;
             --success-color: #4cd964;
+            --error-color: #ff5757;
         }
 
         html[data-theme="light"] {
-            --bg-gradient: linear-gradient(to bottom right, #ffffff, #fdf1ec);
+            --bg-gradient: linear-gradient(to bottom right, #f7f7f7, #e6f0ff);
             --container-bg: rgba(255, 255, 255, 0.9);
-            --card-bg: rgba(250, 250, 250, 0.9);
+            --card-bg: rgba(255, 255, 255, 0.9);
             --text-color: #333333;
-            --heading-color: #4568dc;
+            --heading-color: #3a7bd5;
             --border-color: rgba(0, 0, 0, 0.1);
             --switch-active: #34c759;
-            --switch-inactive: #8e8e93;
-            --button-save: #4568dc;
-            --button-danger: #dc4545;
+            --switch-inactive: #aeaeb2;
+            --button-save: #3a7bd5;
+            --button-danger: #ff3b30;
             --success-color: #34c759;
+            --error-color: #ff3b30;
         }
 
         body {
-            font-family: 'Poppins', 'Noto Sans KR', sans-serif;
+            font-family: 'Roboto', 'Noto Sans KR', sans-serif;
             margin: 0;
             padding: 0;
+            min-height: 100vh;
             background: var(--bg-gradient);
             color: var(--text-color);
-            min-height: 100vh;
             transition: all 0.3s ease;
         }
 
         .container {
-            max-width: 1000px;
-            margin: 40px auto;
-            padding: 30px;
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 0;
         }
 
-        .header {
+        header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 30px;
-            padding-bottom: 15px;
+            padding-bottom: 20px;
             border-bottom: 1px solid var(--border-color);
         }
 
-        .header h1 {
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-icon {
+            font-size: 40px;
+            margin-right: 15px;
+            color: var(--heading-color);
+        }
+
+        h1 {
             color: var(--heading-color);
             margin: 0;
             font-size: 2.2rem;
         }
 
-        .header-actions {
+        .user-controls {
             display: flex;
             align-items: center;
-            gap: 15px;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-color);
+            margin-right: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(30deg);
+        }
+
+        .logout-btn {
+            background-color: var(--button-danger);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+
+        .logout-btn i {
+            margin-right: 6px;
+        }
+
+        .logout-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
         }
 
         .server-info {
@@ -76,73 +126,85 @@
             border-radius: 15px;
             padding: 25px;
             margin-bottom: 30px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
             border: 1px solid var(--border-color);
         }
 
-        .server-info h2 {
+        .server-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: var(--heading-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 40px;
+            margin-right: 25px;
+            flex-shrink: 0;
+        }
+
+        .server-name {
+            font-size: 1.8rem;
+            margin: 0 0 10px 0;
+            font-weight: 700;
+        }
+
+        .server-id {
+            color: rgba(var(--text-color-rgb), 0.6);
+            font-size: 0.9rem;
+            margin: 0;
+            font-weight: 500;
+        }
+
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h2 {
             color: var(--heading-color);
             margin-top: 0;
             margin-bottom: 20px;
-            font-size: 1.6rem;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
         }
 
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
+        .card h2 i {
+            margin-right: 10px;
+            font-size: 1.2em;
         }
 
-        .info-item {
+        .setting-group {
+            margin-bottom: 20px;
+        }
+
+        .switch-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             margin-bottom: 15px;
         }
 
-        .info-item label {
-            font-weight: bold;
-            display: block;
-            margin-bottom: 5px;
-            color: var(--heading-color);
-        }
-
-        .info-item span {
-            display: block;
-            padding: 10px;
-            background-color: var(--card-bg);
-            border-radius: 8px;
-            word-break: break-all;
-        }
-
-        .settings-card {
-            background-color: var(--container-bg);
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 30px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            border: 1px solid var(--border-color);
-        }
-
-        .settings-card h2 {
-            color: var(--heading-color);
-            margin-top: 0;
-            margin-bottom: 20px;
-            font-size: 1.6rem;
-        }
-
-        .settings-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        .setting-item {
-            margin-bottom: 20px;
-        }
-
-        .setting-item label {
-            display: flex;
-            align-items: center;
+        .switch-label {
             font-weight: 500;
-            margin-bottom: 10px;
         }
 
         .switch {
@@ -150,7 +212,6 @@
             display: inline-block;
             width: 50px;
             height: 24px;
-            margin-right: 10px;
         }
 
         .switch input {
@@ -167,19 +228,19 @@
             right: 0;
             bottom: 0;
             background-color: var(--switch-inactive);
-            transition: .4s;
+            transition: 0.4s;
             border-radius: 24px;
         }
 
         .slider:before {
             position: absolute;
             content: "";
-            height: 20px;
-            width: 20px;
-            left: 2px;
-            bottom: 2px;
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
             background-color: white;
-            transition: .4s;
+            transition: 0.4s;
             border-radius: 50%;
         }
 
@@ -191,218 +252,252 @@
             transform: translateX(26px);
         }
 
-        .input-field {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            background-color: var(--card-bg);
-            color: var(--text-color);
+        .input-group {
+            margin-bottom: 15px;
         }
 
-        .btn-group {
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: rgba(var(--card-bg-rgb), 0.5);
+            color: var(--text-color);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--heading-color);
+        }
+
+        .form-actions {
             display: flex;
             justify-content: flex-end;
-            gap: 10px;
-            margin-top: 20px;
+            margin-top: 40px;
         }
 
-        .btn {
-            padding: 10px 20px;
+        .save-btn {
+            background-color: var(--button-save);
+            color: white;
             border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
             border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
         }
 
-        .btn-save {
-            background-color: var(--button-save);
-            color: white;
+        .save-btn i {
+            margin-right: 8px;
         }
 
-        .btn-danger {
-            background-color: var(--button-danger);
-            color: white;
-        }
-
-        .btn:hover {
-            opacity: 0.9;
+        .save-btn:hover {
             transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(69, 104, 220, 0.3);
         }
 
-        .logout-btn {
-            background: none;
-            border: none;
-            color: var(--text-color);
-            cursor: pointer;
-            font-size: 1rem;
-            padding: 8px 15px;
-            border-radius: 5px;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .logout-btn:hover {
-            background-color: rgba(220, 69, 69, 0.2);
-        }
-
-        .theme-toggle {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: var(--text-color);
-            transition: transform 0.3s ease;
-        }
-
-        .theme-toggle:hover {
-            transform: rotate(30deg);
-        }
-
-        .success-message {
-            background-color: var(--success-color);
-            color: white;
-            padding: 10px 15px;
-            border-radius: 8px;
+        .message {
             margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 500;
             display: flex;
             align-items: center;
-            gap: 10px;
-            animation: fadeOut 5s forwards;
+            animation: fadeOut 8s forwards;
         }
 
         @keyframes fadeOut {
             0% { opacity: 1; }
             70% { opacity: 1; }
-            100% { opacity: 0; visibility: hidden; }
+            100% { opacity: 0.7; }
+        }
+
+        .success-message {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .error-message {
+            background-color: var(--error-color);
+            color: white;
+        }
+
+        .message i {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            color: rgba(var(--text-color-rgb), 0.7);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: 40px;
         }
 
         @media (max-width: 768px) {
-            .container {
-                padding: 20px;
-                margin: 20px;
-            }
-            
-            .header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 15px;
-            }
-            
-            .info-grid, .settings-grid {
+            .cards-container {
                 grid-template-columns: 1fr;
+            }
+
+            .server-info {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .server-icon {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+
+            header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .logo {
+                margin-bottom: 20px;
+                justify-content: center;
+            }
+
+            .user-controls {
+                justify-content: center;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>서버 설정 패널</h1>
-            <div class="header-actions">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">🔐</div>
+                <h1>설정 관리 패널</h1>
+            </div>
+            <div class="user-controls">
                 <button class="theme-toggle" id="themeToggle">🌓</button>
                 <a href="/logout" class="logout-btn">
                     <i class="fas fa-sign-out-alt"></i> 로그아웃
                 </a>
             </div>
-        </div>
+        </header>
 
-        <% if (locals.query && locals.query.success === 'true') { %>
-        <div class="success-message">
-            <i class="fas fa-check-circle"></i> 설정이 성공적으로 저장되었습니다.
+        <% if (locals.success_messages && success_messages.length > 0) { %>
+        <div class="message success-message">
+            <i class="fas fa-check-circle"></i> <%= success_messages[0] %>
         </div>
         <% } %>
         
+        <% if (locals.error_messages && error_messages.length > 0) { %>
+        <div class="message error-message">
+            <i class="fas fa-exclamation-circle"></i> <%= error_messages[0] %>
+        </div>
+        <% } %>
+
         <div class="server-info">
-            <h2><i class="fas fa-server"></i> 서버 정보</h2>
-            <div class="info-grid">
-                <div class="info-item">
-                    <label>서버 이름</label>
-                    <span><%= serverInfo.name %></span>
-                </div>
-                <div class="info-item">
-                    <label>서버 ID</label>
-                    <span><%= serverInfo.id %></span>
-                </div>
-                <div class="info-item">
-                    <label>등록 날짜</label>
-                    <span><%= serverInfo.date %></span>
-                </div>
-                <div class="info-item">
-                    <label>복구 키</label>
-                    <span><%= serverInfo.key %></span>
-                </div>
+            <div class="server-icon">
+                <i class="fab fa-discord"></i>
+            </div>
+            <div>
+                <h2 class="server-name"><%= serverInfo.name %></h2>
+                <p class="server-id">서버 ID: <%= serverInfo.serverId %></p>
             </div>
         </div>
-        
+
         <form action="/setting/update" method="POST">
-            <div class="settings-card">
-                <h2><i class="fas fa-cog"></i> 기본 설정</h2>
-                <div class="settings-grid">
-                    <div class="setting-item">
-                        <label>
-                            <span class="switch">
-                                <input type="checkbox" name="loggingIp" <%= settings.loggingIp ? 'checked' : '' %>>
-                                <span class="slider"></span>
-                            </span>
-                            IP 주소 로깅
-                        </label>
-                    </div>
-                    <div class="setting-item">
-                        <label>
-                            <span class="switch">
-                                <input type="checkbox" name="loggingMail" <%= settings.loggingMail ? 'checked' : '' %>>
-                                <span class="slider"></span>
-                            </span>
-                            이메일 로깅
-                        </label>
-                    </div>
-                    <div class="setting-item">
-                        <label>
-                            <span class="switch">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            
+            <div class="cards-container">
+                <div class="card">
+                    <h2><i class="fas fa-shield-alt"></i> 보안 설정</h2>
+                    
+                    <div class="setting-group">
+                        <div class="switch-container">
+                            <div class="switch-label">캡차 사용</div>
+                            <label class="switch">
                                 <input type="checkbox" name="useCaptcha" <%= settings.useCaptcha ? 'checked' : '' %>>
                                 <span class="slider"></span>
-                            </span>
-                            캡차 사용
-                        </label>
-                    </div>
-                    <div class="setting-item">
-                        <label>
-                            <span class="switch">
+                            </label>
+                        </div>
+                        
+                        <div class="switch-container">
+                            <div class="switch-label">VPN 차단</div>
+                            <label class="switch">
                                 <input type="checkbox" name="blockVpn" <%= settings.blockVpn ? 'checked' : '' %>>
                                 <span class="slider"></span>
-                            </span>
-                            VPN 차단
-                        </label>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2><i class="fas fa-user-shield"></i> 권한 설정</h2>
+                    
+                    <div class="input-group">
+                        <label for="roleId">인증 역할 ID</label>
+                        <input type="text" id="roleId" name="roleId" class="form-control" value="<%= settings.roleId %>" placeholder="예: 123456789012345678">
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2><i class="fas fa-history"></i> 로깅 설정</h2>
+                    
+                    <div class="setting-group">
+                        <div class="switch-container">
+                            <div class="switch-label">IP 로깅</div>
+                            <label class="switch">
+                                <input type="checkbox" name="loggingIp" <%= settings.loggingIp ? 'checked' : '' %>>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div class="switch-container">
+                            <div class="switch-label">이메일 로깅</div>
+                            <label class="switch">
+                                <input type="checkbox" name="loggingMail" <%= settings.loggingMail ? 'checked' : '' %>>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="loggingChannelId">로깅 채널 ID</label>
+                        <input type="text" id="loggingChannelId" name="loggingChannelId" class="form-control" value="<%= settings.loggingChannelId %>" placeholder="예: 123456789012345678">
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2><i class="fas fa-bell"></i> 알림 설정</h2>
+                    
+                    <div class="input-group">
+                        <label for="webhookUrl">웹훅 URL</label>
+                        <input type="text" id="webhookUrl" name="webhookUrl" class="form-control" value="<%= settings.webhookUrl %>" placeholder="https://discord.com/api/webhooks/...">
                     </div>
                 </div>
             </div>
-            
-            <div class="settings-card">
-                <h2><i class="fas fa-link"></i> 디스코드 설정</h2>
-                <div class="settings-grid">
-                    <div class="setting-item">
-                        <label>웹훅 URL</label>
-                        <input type="text" class="input-field" name="webhookUrl" value="<%= settings.webhookUrl %>">
-                    </div>
-                    <div class="setting-item">
-                        <label>역할 ID</label>
-                        <input type="text" class="input-field" name="roleId" value="<%= settings.roleId %>">
-                    </div>
-                    <div class="setting-item">
-                        <label>로그 채널 ID</label>
-                        <input type="text" class="input-field" name="loggingChannelId" value="<%= settings.loggingChannelId %>">
-                    </div>
-                </div>
-            </div>
-            
-            <div class="btn-group">
-                <button type="submit" class="btn btn-save">설정 저장</button>
+
+            <div class="form-actions">
+                <button type="submit" class="save-btn">
+                    <i class="fas fa-save"></i> 설정 저장
+                </button>
             </div>
         </form>
+
+        <footer>
+            &copy; <%= new Date().getFullYear() %> RestoreBot - 모든 권리 보유
+        </footer>
     </div>
 
     <script>
@@ -427,17 +522,13 @@
         function updateToggleIcon(theme) {
             themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
         }
-
-        const params = new URLSearchParams(window.location.search);
-        const successParam = params.get('success');
         
-        if (successParam === 'true') {
-            setTimeout(() => {
-                const url = new URL(window.location);
-                url.searchParams.delete('success');
-                window.history.pushState({}, '', url);
-            }, 3000);
-        }
+        setTimeout(() => {
+            const messages = document.querySelectorAll('.message');
+            messages.forEach(msg => {
+                msg.style.display = 'none';
+            });
+        }, 8000);
     </script>
 </body>
 </html> 
