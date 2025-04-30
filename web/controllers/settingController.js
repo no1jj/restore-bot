@@ -257,4 +257,4 @@ exports.updateSettings = async (req, res) => {
     }
 }; 
 
-// V1.1
+// V1.1.1

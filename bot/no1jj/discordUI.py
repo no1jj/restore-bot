@@ -1617,4 +1617,4 @@ class ServerRegisterModal(Modal):
         except Exception as e:
             await helper.ErrorEmbed(interaction, f"오류가 발생했습니다: {str(e)}")
 
-# V1.1
+# V1.1.1

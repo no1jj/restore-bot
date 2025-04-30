@@ -12,4 +12,4 @@ router.get('/logout', loginController.processLogout);
 
 module.exports = router;
 
-// V1.1
+// V1.1.1

@@ -391,4 +391,4 @@ if __name__ == "__main__":
     helper.GenDB()
     bot.run(config.botToken)
 
-# V1.1
+# V1.1.1

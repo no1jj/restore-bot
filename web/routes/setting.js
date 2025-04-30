@@ -44,4 +44,4 @@ router.post('/update', authMiddleware, csrfProtection, settingsValidation, (req,
 
 module.exports = router; 
 
-// V1.1
+// V1.1.1
