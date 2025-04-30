@@ -1,7 +1,7 @@
 # RestoreBot - 디스코드 서버 복구 및 인증 봇
 
 <div align="center">
-  <img src="https://cdn.discordapp.com/attachments/1285786391757848643/1367123430956072960/image.png?ex=68137069&is=68121ee9&hm=9b81c1e364d8b5309ff7171ee3133970d4578f6666d4a0deb9fc89f43980df1f&" alt="RestoreBot" width="200">
+  <img src="https://cdn.discordapp.com/attachments/1285786391757848643/1367123430956072960/image.png?ex=68137069&is=68121ee9&hm=9b81c1e364d8b5309ff7171ee3133970d4578f6666d4a0deb9fc89f43980df1f&" alt="RestoreBot" width="2000">
   <br>
   <p><strong>디스코드 서버의 완벽한 보안과 복구를 위한 고급 인증 솔루션</strong></p>
 </div>
