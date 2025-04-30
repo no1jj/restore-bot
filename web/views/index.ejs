@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>메인 페이지</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(to bottom right, #1e1e2f, #2c2c3c);
+            --container-bg: rgba(35, 35, 50, 0.8);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-color: #e4e4e4;
+            --heading-color: #61dafb;
+            --message-color: #cccccc;
+            --button-gradient: linear-gradient(45deg, #3a7bd5, #4889e3);
+            --button-hover-gradient: linear-gradient(45deg, #4889e3, #5a9cf2);
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --button-hover-shadow: rgba(58, 123, 213, 0.4);
+            --icon-color: #e4e4e4;
+        }
+
+        html[data-theme="light"] {
+            --bg-gradient: linear-gradient(to bottom right, #ffffff, #fdf1ec);
+            --container-bg: rgba(255, 255, 255, 0.85);
+            --border-color: rgba(0, 0, 0, 0.05);
+            --text-color: #333333;
+            --heading-color: #ff7d45;
+            --message-color: #555555;
+            --button-gradient: linear-gradient(45deg, #ff7d45, #ffa270);
+            --button-hover-gradient: linear-gradient(45deg, #ffa270, #ffb391);
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --button-hover-shadow: rgba(255, 125, 69, 0.3);
+            --icon-color: #333333;
+        }
+
+        body {
+            font-family: 'Poppins', 'Noto Sans KR', sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        .container {
+            background-color: var(--container-bg);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            backdrop-filter: blur(5px);
+            transform: translateY(0);
+            animation: float 8s ease-in-out infinite;
+            border: 2px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        @media (max-width: 576px) {
+            .container {
+                padding: 30px 20px;
+                margin: 0 15px;
+            }
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .welcome-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: pulse 3s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        h1 {
+            color: var(--heading-color);
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            font-weight: 700;
+            transition: color 0.3s ease;
+        }
+
+        .welcome-message {
+            color: var(--text-color);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            font-weight: 400;
+            letter-spacing: -0.2px;
+            transition: color 0.3s ease;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .social-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--container-bg);
+            border: 2px solid var(--border-color);
+            transition: all 0.3s ease;
+            color: var(--icon-color);
+            font-size: 28px;
+            text-decoration: none;
+        }
+
+        .social-icon:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px var(--button-hover-shadow);
+        }
+
+        .discord {
+            background: linear-gradient(45deg, #5865F2, #7289da);
+        }
+
+        .github {
+            background: linear-gradient(45deg, #333333, #24292e);
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-color);
+            transition: transform 0.3s ease;
+            z-index: 100;
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(30deg);
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <button class="theme-toggle" id="themeToggle">🌓</button>
+    <div class="container">
+        <div class="welcome-icon">👋</div>
+        <h1><%= title %></h1>
+        <div class="welcome-message">
+            <%= message %><br>
+            아래 아이콘을 통해 디스코드 서버나 깃허브에 방문해보세요.
+        </div>
+        
+        <div class="social-links">
+            <a href="<%= discordUrl %>" class="social-icon discord" title="디스코드 서버 방문하기" target="_blank">
+                <i class="fab fa-discord"></i>
+            </a>
+            <a href="<%= githubUrl %>" class="social-icon github" title="깃허브 저장소 방문하기" target="_blank">
+                <i class="fab fa-github"></i>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            html.setAttribute('data-theme', savedTheme);
+            updateToggleIcon(savedTheme);
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateToggleIcon(newTheme);
+        });
+        
+        function updateToggleIcon(theme) {
+            themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+    </script>
+</body>
+</html>
