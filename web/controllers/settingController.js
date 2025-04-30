@@ -1,6 +1,7 @@
 const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
 const { promisify } = require('util');
+const { ChannelType, PermissionFlagsBits } = require('discord.js');
 
 /**
  * 데이터베이스 연결 및 쿼리 Promise 래퍼
@@ -33,10 +34,17 @@ exports.renderSettingPage = async (req, res) => {
     
     try {
         const config = req.app.get('config');
+        const discordClient = req.app.get('discordClient');
         const serverId = req.session.serverId;
         
         if (!serverId) {
             req.flash('error', '세션이 만료되었습니다. 다시 로그인해주세요.');
+            return res.redirect('/login');
+        }
+        
+        const guild = await discordClient.guilds.fetch(serverId).catch(() => null);
+        if (!guild) {
+            req.flash('error', '봇이 서버에 접근할 수 없습니다. 봇이 서버에 초대되어 있는지 확인하세요.');
             return res.redirect('/login');
         }
         
@@ -50,12 +58,42 @@ exports.renderSettingPage = async (req, res) => {
             return res.redirect('/login');
         }
         
+        if (!serverInfo.serverId) {
+            serverInfo.serverId = serverId;
+        }
+        
         const settings = await db.get("SELECT * FROM Settings");
         
         if (!settings) {
             req.flash('error', '설정 정보를 찾을 수 없습니다.');
             return res.redirect('/login');
         }
+        
+        const roles = await guild.roles.fetch();
+        const roleList = roles.filter(role => 
+            role.id !== serverId && 
+            !role.managed &&
+            role.name !== '@everyone'
+        ).sort((a, b) => b.position - a.position) 
+        .map(role => ({
+            id: role.id,
+            name: role.name,
+            color: role.hexColor
+        }));
+        
+        const channels = await guild.channels.fetch();
+        const textChannels = channels.filter(channel => 
+            channel.type === ChannelType.GuildText && 
+            channel.permissionsFor(guild.members.me).has([
+                PermissionFlagsBits.ViewChannel, 
+                PermissionFlagsBits.SendMessages
+            ])
+        ).sort((a, b) => a.position - b.position)
+        .map(channel => ({
+            id: channel.id,
+            name: channel.name,
+            parentName: channel.parent ? channel.parent.name : '없음'
+        }));
         
         const formattedSettings = {
             loggingIp: settings.loggingIp === 1,
@@ -69,7 +107,10 @@ exports.renderSettingPage = async (req, res) => {
         
         res.render('setting_panel', {
             serverInfo: serverInfo,
-            settings: formattedSettings
+            settings: formattedSettings,
+            csrfToken: req.csrfToken(),
+            roles: roleList,
+            channels: textChannels
         });
     } catch (error) {
         console.error('설정 페이지 렌더링 오류:', error);
@@ -92,10 +133,6 @@ exports.renderSettingPage = async (req, res) => {
  * @returns {Object} - 검증된 설정 객체
  */
 function validateSettings(settings) {
-    if (settings.webhookUrl && !settings.webhookUrl.startsWith('https://discord.com/api/webhooks/')) {
-        settings.webhookUrl = '';
-    }
-    
     if (settings.roleId && !/^\d+$/.test(settings.roleId)) {
         settings.roleId = '0';
     }
@@ -108,6 +145,39 @@ function validateSettings(settings) {
 }
 
 /**
+ * 웹훅 생성 또는 가져오기
+ * @param {object} guild - 디스코드 서버 객체
+ * @param {string} channelId - 채널 ID
+ * @returns {string} - 웹훅 URL
+ */
+async function createOrGetWebhook(guild, channelId) {
+    try {
+        if (!channelId || channelId === '0') return '';
+        
+        const channel = await guild.channels.fetch(channelId);
+        if (!channel) return '';
+        
+        const webhooks = await channel.fetchWebhooks();
+        const existingWebhook = webhooks.find(webhook => webhook.name === 'RestoreBot');
+        
+        if (existingWebhook) {
+            return existingWebhook.url;
+        }
+        
+        const newWebhook = await channel.createWebhook({
+            name: 'RestoreBot',
+            avatar: 'https://i.imgur.com/wSTFkRM.png',
+            reason: '서버 설정에서 생성됨'
+        });
+        
+        return newWebhook.url;
+    } catch (error) {
+        console.error('웹훅 생성 오류:', error);
+        return '';
+    }
+}
+
+/**
  * 설정 업데이트
  */
 exports.updateSettings = async (req, res) => {
@@ -115,6 +185,7 @@ exports.updateSettings = async (req, res) => {
     
     try {
         const config = req.app.get('config');
+        const discordClient = req.app.get('discordClient');
         const serverId = req.session.serverId;
         
         if (!serverId) {
@@ -122,17 +193,30 @@ exports.updateSettings = async (req, res) => {
             return res.redirect('/login');
         }
         
+        const guild = await discordClient.guilds.fetch(serverId).catch(() => null);
+        if (!guild) {
+            req.flash('error', '봇이 서버에 접근할 수 없습니다.');
+            return res.redirect('/setting');
+        }
+        
         const serverDbPath = path.join(config.DBFolderPath, `${serverId}.db`);
         db = getDb(serverDbPath);
+        
+        const loggingChannelId = req.body.loggingChannelId || '0';
+        let webhookUrl = '';
+        
+        if (loggingChannelId !== '0') {
+            webhookUrl = await createOrGetWebhook(guild, loggingChannelId);
+        }
         
         const settings = {
             loggingIp: req.body.loggingIp ? 1 : 0,
             loggingMail: req.body.loggingMail ? 1 : 0,
-            webhookUrl: req.body.webhookUrl || '',
+            webhookUrl: webhookUrl,
             roleId: req.body.roleId || '0',
             useCaptcha: req.body.useCaptcha ? 1 : 0,
             blockVpn: req.body.blockVpn ? 1 : 0,
-            loggingChannelId: req.body.loggingChannelId || '0'
+            loggingChannelId: loggingChannelId
         };
         
         const validatedSettings = validateSettings(settings);

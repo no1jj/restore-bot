@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>서버 설정 패널</title>
+    <title>서버 패널</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
@@ -19,6 +19,7 @@
             --button-danger: #dc4545;
             --success-color: #4cd964;
             --error-color: #ff5757;
+            --text-color-rgb: 228, 228, 228;
         }
 
         html[data-theme="light"] {
@@ -34,6 +35,7 @@
             --button-danger: #ff3b30;
             --success-color: #34c759;
             --error-color: #ff3b30;
+            --text-color-rgb: 51, 51, 51;
         }
 
         body {
@@ -267,16 +269,73 @@
             padding: 10px 12px;
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            background-color: rgba(var(--card-bg-rgb), 0.5);
+            background-color: rgba(35, 35, 50, 0.5);
             color: var(--text-color);
             font-size: 0.95rem;
             transition: all 0.3s ease;
             box-sizing: border-box;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+        }
+
+        .select-wrapper {
+            position: relative;
+        }
+
+        .select-wrapper::after {
+            content: '\f078';
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-color);
+            pointer-events: none;
+        }
+
+        select.form-control {
+            padding-right: 30px;
+            cursor: pointer;
+        }
+
+        select.form-control option {
+            background-color: var(--card-bg);
+            color: var(--text-color);
         }
 
         .form-control:focus {
             outline: none;
             border-color: var(--heading-color);
+        }
+
+        .role-option {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .role-color {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .role-name {
+            flex-grow: 1;
+        }
+
+        .channel-group {
+            font-weight: 600;
+            opacity: 0.7;
+            margin-top: 8px;
         }
 
         .form-actions {
@@ -446,8 +505,26 @@
                     <h2><i class="fas fa-user-shield"></i> 권한 설정</h2>
                     
                     <div class="input-group">
-                        <label for="roleId">인증 역할 ID</label>
-                        <input type="text" id="roleId" name="roleId" class="form-control" value="<%= settings.roleId %>" placeholder="예: 123456789012345678">
+                        <label for="roleId">인증 역할</label>
+                        <div class="select-wrapper">
+                            <select id="roleId" name="roleId" class="form-control">
+                                <option value="0">역할 선택 안함</option>
+                                <% roles.forEach(role => { %>
+                                    <option value="<%= role.id %>" 
+                                            <%= settings.roleId === role.id ? 'selected' : '' %>
+                                            data-color="<%= role.color %>">
+                                        <%= role.name %>
+                                    </option>
+                                <% }); %>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div id="selectedRole" class="role-preview" style="margin-top: 10px; display: none;">
+                        <div class="role-option">
+                            <span class="role-color" id="roleColor"></span>
+                            <span class="role-name" id="roleName"></span>
+                        </div>
                     </div>
                 </div>
 
@@ -473,17 +550,34 @@
                     </div>
                     
                     <div class="input-group">
-                        <label for="loggingChannelId">로깅 채널 ID</label>
-                        <input type="text" id="loggingChannelId" name="loggingChannelId" class="form-control" value="<%= settings.loggingChannelId %>" placeholder="예: 123456789012345678">
-                    </div>
-                </div>
-
-                <div class="card">
-                    <h2><i class="fas fa-bell"></i> 알림 설정</h2>
-                    
-                    <div class="input-group">
-                        <label for="webhookUrl">웹훅 URL</label>
-                        <input type="text" id="webhookUrl" name="webhookUrl" class="form-control" value="<%= settings.webhookUrl %>" placeholder="https://discord.com/api/webhooks/...">
+                        <label for="loggingChannelId">로깅 채널</label>
+                        <div class="select-wrapper">
+                            <select id="loggingChannelId" name="loggingChannelId" class="form-control">
+                                <option value="0">채널 선택 안함</option>
+                                <% 
+                                let lastParent = '';
+                                channels.forEach(channel => {
+                                    if (lastParent !== channel.parentName) {
+                                        lastParent = channel.parentName;
+                                        %>
+                                        <optgroup label="<%= channel.parentName %>">
+                                    <% } %>
+                                    
+                                    <option value="<%= channel.id %>" 
+                                            <%= settings.loggingChannelId === channel.id ? 'selected' : '' %>>
+                                        #<%= channel.name %>
+                                    </option>
+                                    
+                                    <% if (channels[channels.indexOf(channel) + 1] && 
+                                           channels[channels.indexOf(channel) + 1].parentName !== channel.parentName) { %>
+                                        </optgroup>
+                                    <% } %>
+                                <% }); %>
+                            </select>
+                        </div>
+                        <div class="info-text" style="margin-top: 10px; font-size: 0.85rem; opacity: 0.8;">
+                            <i class="fas fa-info-circle"></i> 채널을 선택하면 자동으로 웹훅이 생성됩니다.
+                        </div>
                     </div>
                 </div>
             </div>
@@ -523,6 +617,29 @@
             themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
         }
         
+        // 역할 선택 시 미리보기 표시
+        const roleSelect = document.getElementById('roleId');
+        const selectedRole = document.getElementById('selectedRole');
+        const roleColor = document.getElementById('roleColor');
+        const roleName = document.getElementById('roleName');
+        
+        function updateRolePreview() {
+            const selectedOption = roleSelect.options[roleSelect.selectedIndex];
+            if (selectedOption.value !== '0') {
+                roleColor.style.backgroundColor = selectedOption.dataset.color || '#99aab5';
+                roleName.textContent = selectedOption.textContent.trim();
+                selectedRole.style.display = 'block';
+            } else {
+                selectedRole.style.display = 'none';
+            }
+        }
+        
+        roleSelect.addEventListener('change', updateRolePreview);
+        
+        // 페이지 로드 시 역할 미리보기 업데이트
+        updateRolePreview();
+        
+        // 일정 시간 후 메시지 숨기기
         setTimeout(() => {
             const messages = document.querySelectorAll('.message');
             messages.forEach(msg => {

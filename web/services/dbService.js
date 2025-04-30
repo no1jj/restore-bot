@@ -11,9 +11,41 @@ function loadDB(serverId) {
         const config = require('../../config.json');
         const dbPath = path.join(config.DBFolderPath, `${serverId}.db`);
         
-        const db = require('better-sqlite3')(dbPath);
+        const db = new sqlite3.Database(dbPath);
         
-        db.pragma('journal_mode = WAL');
+        // sqlite3에서는 pragma를 직접 실행해야 함
+        db.run("PRAGMA journal_mode = WAL");
+        
+        // 기존 함수를 Promise 기반으로 래핑
+        db.prepare = function(sql) {
+            const statement = {
+                get: function(params, callback) {
+                    if (typeof params === 'function') {
+                        callback = params;
+                        params = [];
+                    }
+                    db.get(sql, params, callback);
+                    return this;
+                },
+                run: function(params, callback) {
+                    if (typeof params === 'function') {
+                        callback = params;
+                        params = [];
+                    }
+                    db.run(sql, params, callback);
+                    return this;
+                },
+                all: function(params, callback) {
+                    if (typeof params === 'function') {
+                        callback = params;
+                        params = [];
+                    }
+                    db.all(sql, params, callback);
+                    return this;
+                }
+            };
+            return statement;
+        };
         
         return db;
     } catch (error) {
@@ -34,19 +66,20 @@ exports.checkServerExists = (serverId) => {
             return false;
         }
         
-        try {
-            const result = conn.prepare("SELECT COUNT(*) as count FROM Settings").get();
+        let result = false;
+        conn.get("SELECT COUNT(*) as count FROM Settings", [], (err, row) => {
+            if (!err && row && row.count > 0) {
+                result = true;
+            }
             conn.close();
-            
-            return result && result.count > 0;
-        } catch (err) {
-            conn.close();
-            return false;
-        }
+        });
+        
+        return result;
     } catch (error) {
+        console.error(`서버 존재 확인 실패: ${error}`);
         return false;
     }
-};
+}
 
 /**
  * 역할 ID 가져오기
@@ -60,20 +93,17 @@ exports.getRoleId = (serverId) => {
             return null;
         }
         
-        try {
-            const settingsData = conn.prepare("SELECT roleId FROM Settings").get();
-            conn.close();
-            
-            if (settingsData && settingsData.roleId !== undefined) {
-                return settingsData.roleId;
+        let roleId = null;
+        conn.get("SELECT roleId FROM Settings", [], (err, row) => {
+            if (!err && row && row.roleId !== undefined) {
+                roleId = row.roleId;
             }
-            
-            return null;
-        } catch (err) {
             conn.close();
-            return null;
-        }
+        });
+        
+        return roleId;
     } catch (error) {
+        console.error(`역할 ID 가져오기 실패: ${error}`);
         return null;
     }
 };
@@ -90,20 +120,17 @@ exports.getWebhookUrl = (serverId) => {
             return null;
         }
         
-        try {
-            const settingsData = conn.prepare("SELECT webhookUrl FROM Settings").get();
-            conn.close();
-            
-            if (settingsData && settingsData.webhookUrl) {
-                return settingsData.webhookUrl;
+        let webhookUrl = null;
+        conn.get("SELECT webhookUrl FROM Settings", [], (err, row) => {
+            if (!err && row && row.webhookUrl) {
+                webhookUrl = row.webhookUrl;
             }
-            
-            return null;
-        } catch (err) {
             conn.close();
-            return null;
-        }
+        });
+        
+        return webhookUrl;
     } catch (error) {
+        console.error(`웹훅 URL 가져오기 실패: ${error}`);
         return null;
     }
 };
@@ -120,20 +147,17 @@ exports.checkLoggingIp = (serverId) => {
             return false;
         }
         
-        try {
-            const settingsData = conn.prepare("SELECT loggingIp FROM Settings").get();
-            conn.close();
-            
-            if (settingsData && settingsData.loggingIp !== undefined) {
-                return settingsData.loggingIp === 1;
+        let isLoggingIp = false;
+        conn.get("SELECT loggingIp FROM Settings", [], (err, row) => {
+            if (!err && row && row.loggingIp !== undefined) {
+                isLoggingIp = row.loggingIp === 1;
             }
-            
-            return false;
-        } catch (err) {
             conn.close();
-            return false;
-        }
+        });
+        
+        return isLoggingIp;
     } catch (error) {
+        console.error(`IP 로깅 설정 확인 실패: ${error}`);
         return false;
     }
 };
@@ -150,20 +174,17 @@ exports.checkLoggingMail = (serverId) => {
             return false;
         }
         
-        try {
-            const settingsData = conn.prepare("SELECT loggingMail FROM Settings").get();
-            conn.close();
-            
-            if (settingsData && settingsData.loggingMail !== undefined) {
-                return settingsData.loggingMail === 1;
+        let isLoggingMail = false;
+        conn.get("SELECT loggingMail FROM Settings", [], (err, row) => {
+            if (!err && row && row.loggingMail !== undefined) {
+                isLoggingMail = row.loggingMail === 1;
             }
-            
-            return false;
-        } catch (err) {
             conn.close();
-            return false;
-        }
+        });
+        
+        return isLoggingMail;
     } catch (error) {
+        console.error(`이메일 로깅 설정 확인 실패: ${error}`);
         return false;
     }
 };
@@ -180,20 +201,17 @@ exports.checkBlockVpn = (serverId) => {
             return false;
         }
         
-        try {
-            const settingsData = conn.prepare("SELECT blockVpn FROM Settings").get();
-            conn.close();
-            
-            if (settingsData && settingsData.blockVpn !== undefined) {
-                return settingsData.blockVpn === 1;
+        let isBlockVpn = false;
+        conn.get("SELECT blockVpn FROM Settings", [], (err, row) => {
+            if (!err && row && row.blockVpn !== undefined) {
+                isBlockVpn = row.blockVpn === 1;
             }
-            
-            return false;
-        } catch (err) {
             conn.close();
-            return false;
-        }
+        });
+        
+        return isBlockVpn;
     } catch (error) {
+        console.error(`VPN 차단 설정 확인 실패: ${error}`);
         return false;
     }
 };
@@ -210,20 +228,17 @@ exports.checkUsingCaptcha = (serverId) => {
             return false;
         }
         
-        try {
-            const settingsData = conn.prepare("SELECT useCaptcha FROM Settings").get();
-            conn.close();
-            
-            if (settingsData && settingsData.useCaptcha !== undefined) {
-                return settingsData.useCaptcha === 1;
+        let isUsingCaptcha = false;
+        conn.get("SELECT useCaptcha FROM Settings", [], (err, row) => {
+            if (!err && row && row.useCaptcha !== undefined) {
+                isUsingCaptcha = row.useCaptcha === 1;
             }
-            
-            return false;
-        } catch (err) {
             conn.close();
-            return false;
-        }
+        });
+        
+        return isUsingCaptcha;
     } catch (error) {
+        console.error(`캡챠 사용 설정 확인 실패: ${error}`);
         return false;
     }
 };
@@ -232,7 +247,7 @@ exports.checkUsingCaptcha = (serverId) => {
  * 사용자 존재 여부 확인
  * @param {string} guildId - 서버 ID
  * @param {string} userId - 사용자 ID
- * @returns {boolean} 존재 여부
+ * @returns {Promise<boolean>} 존재 여부
  */
 exports.checkUserExists = async (guildId, userId) => {
     try {
@@ -241,16 +256,19 @@ exports.checkUserExists = async (guildId, userId) => {
             return false;
         }
         
-        try {
-            const result = conn.prepare("SELECT COUNT(*) as count FROM Users WHERE userId = ?").get(userId);
-            conn.close();
-            
-            return result && result.count > 0;
-        } catch (err) {
-            conn.close();
-            return false;
-        }
+        return new Promise((resolve) => {
+            conn.get("SELECT COUNT(*) as count FROM Users WHERE userId = ?", [userId], (err, row) => {
+                conn.close();
+                if (err) {
+                    console.error(`사용자 존재 확인 실패: ${err}`);
+                    resolve(false);
+                } else {
+                    resolve(row && row.count > 0);
+                }
+            });
+        });
     } catch (error) {
+        console.error(`사용자 존재 확인 실패: ${error}`);
         return false;
     }
 };
@@ -271,13 +289,16 @@ exports.addUser = (guildId, userId, refToken, email, serviceToken, ip) => {
             return;
         }
         
-        try {
-            const stmt = conn.prepare("INSERT INTO Users (userId, refreshToken, email, serviceToken, ip) VALUES (?, ?, ?, ?, ?)");
-            stmt.run(userId, refToken, email, serviceToken, ip);
-            conn.close();
-        } catch (err) {
-            conn.close();
-        }
+        conn.run(
+            "INSERT INTO Users (userId, refreshToken, email, serviceToken, ip) VALUES (?, ?, ?, ?, ?)", 
+            [userId, refToken, email, serviceToken, ip], 
+            (err) => {
+                if (err) {
+                    console.error(`사용자 추가 실패: ${err}`);
+                }
+                conn.close();
+            }
+        );
     } catch (error) {
         console.error(`사용자 추가 실패: ${error}`);
     }
@@ -298,13 +319,16 @@ exports.updateUser = (guildId, userId, refreshToken, email, ip) => {
             return;
         }
         
-        try {
-            const stmt = conn.prepare("UPDATE Users SET refreshToken = ?, email = ?, ip = ? WHERE userId = ?");
-            stmt.run(refreshToken, email, ip, userId);
-            conn.close();
-        } catch (err) {
-            conn.close();
-        }
+        conn.run(
+            "UPDATE Users SET refreshToken = ?, email = ?, ip = ? WHERE userId = ?", 
+            [refreshToken, email, ip, userId], 
+            (err) => {
+                if (err) {
+                    console.error(`사용자 정보 업데이트 실패: ${err}`);
+                }
+                conn.close();
+            }
+        );
     } catch (error) {
         console.error(`사용자 정보 업데이트 실패: ${error}`);
     }
@@ -315,7 +339,7 @@ exports.updateUser = (guildId, userId, refreshToken, email, ip) => {
  * @param {string} userId - 사용자 ID
  * @param {string} ip - IP 주소
  * @param {string} email - 이메일
- * @returns {boolean} 화이트리스트 여부
+ * @returns {Promise<boolean>} 화이트리스트 여부
  */
 exports.checkIsWhitelisted = async (userId, ip, email) => {
     try {
@@ -432,7 +456,7 @@ exports.checkIsWhitelisted = async (userId, ip, email) => {
  * @param {string} userId - 사용자 ID
  * @param {string} ip - IP 주소
  * @param {string} email - 이메일
- * @returns {boolean} 블랙리스트 여부
+ * @returns {Promise<boolean>} 블랙리스트 여부
  */
 exports.checkIsBlacklisted = async (userId, ip, email) => {
     try {
