@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>서버 설정 패널</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(to bottom right, #1e1e2f, #2c2c3c);
+            --container-bg: rgba(35, 35, 50, 0.9);
+            --card-bg: rgba(45, 45, 65, 0.7);
+            --text-color: #e4e4e4;
+            --heading-color: #61dafb;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --switch-active: #4cd964;
+            --switch-inactive: #8e8e93;
+            --button-save: #4568dc;
+            --button-danger: #dc4545;
+            --success-color: #4cd964;
+        }
+
+        html[data-theme="light"] {
+            --bg-gradient: linear-gradient(to bottom right, #ffffff, #fdf1ec);
+            --container-bg: rgba(255, 255, 255, 0.9);
+            --card-bg: rgba(250, 250, 250, 0.9);
+            --text-color: #333333;
+            --heading-color: #4568dc;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --switch-active: #34c759;
+            --switch-inactive: #8e8e93;
+            --button-save: #4568dc;
+            --button-danger: #dc4545;
+            --success-color: #34c759;
+        }
+
+        body {
+            font-family: 'Poppins', 'Noto Sans KR', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 30px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header h1 {
+            color: var(--heading-color);
+            margin: 0;
+            font-size: 2.2rem;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .server-info {
+            background-color: var(--container-bg);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .server-info h2 {
+            color: var(--heading-color);
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.6rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .info-item {
+            margin-bottom: 15px;
+        }
+
+        .info-item label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+            color: var(--heading-color);
+        }
+
+        .info-item span {
+            display: block;
+            padding: 10px;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            word-break: break-all;
+        }
+
+        .settings-card {
+            background-color: var(--container-bg);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .settings-card h2 {
+            color: var(--heading-color);
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.6rem;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .setting-item {
+            margin-bottom: 20px;
+        }
+
+        .setting-item label {
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+            margin-right: 10px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--switch-inactive);
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--switch-active);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-save {
+            background-color: var(--button-save);
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: var(--button-danger);
+            color: white;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .logout-btn:hover {
+            background-color: rgba(220, 69, 69, 0.2);
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-color);
+            transition: transform 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(30deg);
+        }
+
+        .success-message {
+            background-color: var(--success-color);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: fadeOut 5s forwards;
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { opacity: 0; visibility: hidden; }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 20px;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .info-grid, .settings-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>서버 설정 패널</h1>
+            <div class="header-actions">
+                <button class="theme-toggle" id="themeToggle">🌓</button>
+                <a href="/logout" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> 로그아웃
+                </a>
+            </div>
+        </div>
+
+        <% if (locals.query && locals.query.success === 'true') { %>
+        <div class="success-message">
+            <i class="fas fa-check-circle"></i> 설정이 성공적으로 저장되었습니다.
+        </div>
+        <% } %>
+        
+        <div class="server-info">
+            <h2><i class="fas fa-server"></i> 서버 정보</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>서버 이름</label>
+                    <span><%= serverInfo.name %></span>
+                </div>
+                <div class="info-item">
+                    <label>서버 ID</label>
+                    <span><%= serverInfo.id %></span>
+                </div>
+                <div class="info-item">
+                    <label>등록 날짜</label>
+                    <span><%= serverInfo.date %></span>
+                </div>
+                <div class="info-item">
+                    <label>복구 키</label>
+                    <span><%= serverInfo.key %></span>
+                </div>
+            </div>
+        </div>
+        
+        <form action="/setting/update" method="POST">
+            <div class="settings-card">
+                <h2><i class="fas fa-cog"></i> 기본 설정</h2>
+                <div class="settings-grid">
+                    <div class="setting-item">
+                        <label>
+                            <span class="switch">
+                                <input type="checkbox" name="loggingIp" <%= settings.loggingIp ? 'checked' : '' %>>
+                                <span class="slider"></span>
+                            </span>
+                            IP 주소 로깅
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            <span class="switch">
+                                <input type="checkbox" name="loggingMail" <%= settings.loggingMail ? 'checked' : '' %>>
+                                <span class="slider"></span>
+                            </span>
+                            이메일 로깅
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            <span class="switch">
+                                <input type="checkbox" name="useCaptcha" <%= settings.useCaptcha ? 'checked' : '' %>>
+                                <span class="slider"></span>
+                            </span>
+                            캡차 사용
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            <span class="switch">
+                                <input type="checkbox" name="blockVpn" <%= settings.blockVpn ? 'checked' : '' %>>
+                                <span class="slider"></span>
+                            </span>
+                            VPN 차단
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="settings-card">
+                <h2><i class="fas fa-link"></i> 디스코드 설정</h2>
+                <div class="settings-grid">
+                    <div class="setting-item">
+                        <label>웹훅 URL</label>
+                        <input type="text" class="input-field" name="webhookUrl" value="<%= settings.webhookUrl %>">
+                    </div>
+                    <div class="setting-item">
+                        <label>역할 ID</label>
+                        <input type="text" class="input-field" name="roleId" value="<%= settings.roleId %>">
+                    </div>
+                    <div class="setting-item">
+                        <label>로그 채널 ID</label>
+                        <input type="text" class="input-field" name="loggingChannelId" value="<%= settings.loggingChannelId %>">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="btn-group">
+                <button type="submit" class="btn btn-save">설정 저장</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            html.setAttribute('data-theme', savedTheme);
+            updateToggleIcon(savedTheme);
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateToggleIcon(newTheme);
+        });
+        
+        function updateToggleIcon(theme) {
+            themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        const successParam = params.get('success');
+        
+        if (successParam === 'true') {
+            setTimeout(() => {
+                const url = new URL(window.location);
+                url.searchParams.delete('success');
+                window.history.pushState({}, '', url);
+            }, 3000);
+        }
+    </script>
+</body>
+</html> 
