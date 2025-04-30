@@ -105,3 +105,5 @@ exports.verifyCaptcha = async (captchaResponse, config) => {
 exports.checkIsVpn = async (ip, config) => {
     return await ipService.checkIsVpn(ip, config);
 };
+
+// V1.1

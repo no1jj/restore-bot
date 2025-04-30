@@ -119,3 +119,5 @@ exports.processLogout = (req, res) => {
         res.redirect('/');
     });
 }; 
+
+// V1.1

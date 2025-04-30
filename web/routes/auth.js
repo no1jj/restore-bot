@@ -10,4 +10,6 @@ router.get('/login', loginController.renderLoginPage);
 router.post('/login', loginController.processLogin);
 router.get('/logout', loginController.processLogout);
 
-module.exports = router; 
+module.exports = router;
+
+// V1.1

@@ -184,3 +184,5 @@ exports.createSuccessEmbed = (title, description) => {
         color: 0x00ff00
     });
 }; 
+
+// V1.1

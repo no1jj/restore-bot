@@ -590,3 +590,5 @@ exports.checkIsBlacklisted = async (userId, ip, email) => {
 };
 
 exports.loadDB = loadDB; 
+
+// V1.1

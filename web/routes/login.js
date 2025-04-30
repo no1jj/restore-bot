@@ -29,3 +29,5 @@ router.post('/login', csrfProtection, loginValidation, (req, res, next) => {
 router.get('/logout', loginController.processLogout);
 
 module.exports = router; 
+
+// V1.1

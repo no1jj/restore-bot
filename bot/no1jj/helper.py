@@ -480,3 +480,5 @@ async def UpdateRefreshToken(old_token, new_token):
             conn.close()
         except Exception as e:
             print(f"DB {db_file} 업데이트 중 오류: {str(e)}")
+
+# V1.1

@@ -1,38 +1,51 @@
-# no.1_jj 디스코드 복구 봇
+# RestoreBot - 디스코드 서버 복구 및 인증 봇
 
-## 📖 소개
-이 봇은 디스코드 서버를 위한 고급 인증 시스템을 제공하는 봇입니다. OAuth2를 통한 안전한 인증 프로세스와 사용자 관리 기능을 제공하여 서버 보안을 강화합니다.
+<div align="center">
+  <img src="https://cdn.discordapp.com/attachments/1122899521855983777/1122903180875444264/image.png" alt="RestoreBot 로고" width="200">
+  <br>
+  <p><strong>디스코드 서버의 완벽한 보안과 복구를 위한 고급 인증 솔루션</strong></p>
+</div>
 
-## ✨ 주요 기능
+## 🚀 소개
 
-### ✨ 서버 복구
-- 유저 복구
-- 카테고리 복구 (미구현)
-- 채널 복구 (미구현)
-- 권한 복구 (미구현)
-- 오토모드 복구 (미구현)
+RestoreBot은 디스코드 서버 관리자를 위한 종합적인 보안 및 복구 솔루션입니다. OAuth2 기반의 안전한 인증 시스템, 서버 복구 기능, 사용자 관리 도구를 제공하여 여러분의 디스코드 서버를 보호하고 유지합니다.
 
+### 주요 특징
+- **🔐 고급 인증 시스템**: 디스코드 OAuth2를 통한 안전한 인증 프로세스
+- **🛡️ 강력한 보안 기능**: VPN 감지, 화이트리스트/블랙리스트, hCaptcha 통합
+- **🔄 서버 복구 기능**: 유저 및 서버 구조 복구 기능
+- **📊 상세한 로깅 시스템**: 모든 인증 활동에 대한 투명한 기록
+- **⚙️ 손쉬운 관리**: 직관적인 웹 기반 대시보드 및 봇 명령어
 
-### 🔐 안전한 인증 시스템
-- 디스코드 OAuth2를 통한 안전한 사용자 인증
-- 커스터마이징 가능한 인증 메시지 및 버튼 설정
-- 성공적인 인증 시 자동 역할 부여
+## ✨ 상세 기능
 
-### 🛡️ 강력한 보안 기능
-- 화이트리스트/블랙리스트 시스템으로 사용자 접근 제어
-  - 사용자 ID, IP 주소, 이메일 기반 필터링
-- VPN 사용 감지 및 차단 기능
-- 캡차(hCaptcha) 통합으로 봇 계정 차단
+### 🔄 서버 복구 시스템
+- **유저 복구**: 삭제된 서버의 멤버들을 자동으로 초대하여 복구
+- **카테고리 복구**: 서버 카테고리 구조 복원 (개발 중)
+- **채널 복구**: 텍스트 및 음성 채널 복원 (개발 중)
+- **권한 복구**: 역할 및 권한 설정 복원 (개발 중)
+- **오토모드 복구**: 자동화 규칙 복원 (개발 중)
+
+### 🔐 인증 시스템
+- **안전한 OAuth2 인증**: 디스코드의 공식 인증 시스템을 통한 보안 강화
+- **커스터마이징 가능한 UI**: 서버에 맞는 인증 메시지 및 버튼 설정
+- **역할 자동 부여**: 인증 성공 시 지정된 역할 자동 부여
+
+### 🛡️ 보안 기능
+- **화이트리스트/블랙리스트**: 다양한 기준으로 사용자 접근 제어
+  - **사용자 ID**: 특정 사용자 허용/차단
+  - **IP 주소**: 특정 IP나 IP 범위 허용/차단
+  - **이메일**: 특정 이메일 도메인 또는 주소 허용/차단
+- **VPN 감지 및 차단**: VPN, 프록시, TOR 노드 사용자 감지 및 필터링
+- **캡차 인증**: hCaptcha 통합으로 봇 계정 및 자동화된 접근 차단
 
 ### 📊 로깅 및 모니터링
-- 서버별 맞춤 로그 채널 설정
-- 인증 성공/실패에 대한 상세 로그
-- 오너를 위한 종합적인 오너 로그 시스템
-
-### 📱 사용자 정보 관리
-- 사용자 기기, 브라우저 정보 수집 (설정에 따라 선택적)
-- IP 로깅 기능 (설정에 따라 선택적)
-- 이메일 로깅 기능 (설정에 따라 선택적)
+- **서버별 로그 채널**: 각 서버마다 별도의 로그 채널 설정 가능
+- **상세한 인증 로그**: 인증 성공/실패에 대한 자세한 정보 기록
+  - **사용자 정보**: 사용자명, ID, 글로벌 이름
+  - **기기 정보**: OS, 브라우저 유형
+  - **네트워크 정보**: IP 주소, 지역, ISP (관리자 설정에 따라 선택적)
+- **관리자 로그**: 봇 소유자를 위한 종합적인 로그 시스템
 
 ## 🔧 설치 방법
 
@@ -45,27 +58,25 @@
 ### 설치 단계
 1. 릴리즈 다운로드
 ```bash
-https://github.com/no1jj/restore-bot/releases/tag/V1.0
+https://github.com/no1jj/restore-bot/releases/tag/V1.1
 ```
 
 2. 필요한 패키지 설치
 ```bash
 npm install  # 웹 서버 종속성 설치
-pip install -r requirements.txt  # 봇 종속성 설치
 ```
 
 3. 설정 파일 구성
 ```bash
-cp config.example.json config.json
-# config.json 파일을 적절히 수정하세요
+config.json 파일을 적절히 수정하세요
 ```
 
 4. 시행일 수정
 ```
-no1jj/discordUI.py 245줄, view/privacy_policy.ejs 265줄에 시행일 수정 ex: 2025년 4월 2일
+bot/no1jj/discordUI.py 248줄, web/view/privacy_policy.ejs 244줄에 시행일 수정 ex: 2025년 5월 1일
 ```
 
-4. 봇 실행
+5. 봇 실행
 ```bash
 python main.py
 ```
@@ -90,58 +101,6 @@ python main.py
 }
 ```
 
-### 설정 항목 상세 설명
-
-#### 필수 항목
-1. **botToken**
-   - Discord Developer Portal에서 Bot 탭에서 생성한 봇의 토큰
-   - 취득 방법: Discord Developer Portal → Applications → 앱 선택 → Bot → Reset Token
-
-2. **clientId**
-   - Discord 앱의 고유 식별자
-   - 취득 방법: Discord Developer Portal → Applications → 앱 선택 → OAuth2 → Client ID
-
-3. **clientSecret**
-   - Discord 앱의 보안 비밀 키
-   - 취득 방법: Discord Developer Portal → Applications → 앱 선택 → OAuth2 → Client Secret
-
-4. **ownerId**
-   - 봇 소유자의 Discord ID (관리자 전용 명령어 실행 권한)
-   - 취득 방법: Discord 설정 → 고급 → 개발자 모드 활성화 → 본인 프로필 우클릭 → ID 복사
-
-5. **domain**
-   - 봇의 OAuth2 인증 프로세스에 사용될 도메인
-   - 개발 환경: `"domain": "http://localhost:3000"`
-   - 프로덕션 환경: `"domain": "https://yourdomain.com"`
-   - 주의: 끝에 슬래시(/)를 포함하지 마세요
-
-#### 데이터베이스 설정
-6. **DBFolderPath**
-   - 서버별 데이터베이스 파일이 저장될 폴더 경로
-   - 예: `"./DB"` (상대 경로) 또는 절대 경로
-
-7. **DBPath**
-   - 메인 데이터베이스 파일 경로 (화이트/블랙리스트 등 저장)
-   - 예: `"./db.db"` (DBFolderPath와 일관되게 설정)
-
-8. **port**
-   - 웹 서버가 실행될 포트 번호
-   - 기본값: `3000` (80, 443 포트는 관리자 권한 필요)
-
-#### 로깅 및 보안 설정
-9. **ownerLogWebhook**
-   - 봇 관련 중요 이벤트를 기록할 Discord 웹훅 URL
-   - 취득 방법: Discord 채널 설정 → 연동 → 웹훅 생성 → 웹훅 URL 복사
-
-10. **hCaptchaSiteKey** & **hCaptchaSecretKey**
-    - 캡차 인증에 사용될 hCaptcha 키
-    - 취득 방법: [hCaptcha](https://www.hcaptcha.com/) 가입 → 새 사이트 추가 → Keys 확인
-
-11. **vpnApiKey**
-    - VPN 사용 여부 확인을 위한 API 키
-    - 취득 방법: [vpnapi.io](https://vpnapi.io/)에 가입 → API 키 발급
-    - 기능: VPN, 프록시, TOR 노드, 프라이빗 릴레이 감지
-
 ### 디스코드 개발자 포털 설정
 1. [Discord Developer Portal](https://discord.com/developers/applications)에서 새 애플리케이션 생성
 2. Bot 탭에서 봇 생성 및 토큰 발급
@@ -151,9 +110,12 @@ python main.py
 ## 🎮 사용 방법
 
 ### 봇 초대하기
-1. 다음 URL을 통해 봇을 서버에 초대: `https://discord.com/oauth2/authorize?client_id=YOUR_CLIENT_ID&permissions=8&scope=bot%20applications.commands`
+다음 URL을 통해 봇을 서버에 초대하세요:
+```
+https://discord.com/oauth2/authorize?client_id=YOUR_CLIENT_ID&permissions=8&scope=bot%20applications.commands
+```
 
-### 기본 명령어
+### 주요 명령어
 - `/등록` - 서버를 봇에 등록합니다
 - `/설정` - 서버 설정을 변경합니다
 - `/인증` - 인증 메시지를 생성합니다
@@ -162,13 +124,11 @@ python main.py
 - `/블랙리스트관리` - 블랙리스트 사용자 관리 [오너 전용]
 - `/복구` - 서버 및 유저 복구를 시작합니다
 
-### 서버 설정 옵션
-- IP 기록 여부: 인증 시 사용자 IP 기록 설정
-- 이메일 기록 여부: 인증 시 사용자 이메일 기록 설정
-- 로그 채널 설정: 인증 로그가 기록될 채널 지정
-- 인증 역할 설정: 인증 성공 시 부여할 역할 지정
-- 캡차 사용 여부: hCaptcha를 통한 사용자 검증 활성화
-- VPN 차단 여부: VPN 사용자의 인증 차단 설정
+## 💻 웹 패널 기능
+- **서버 관리자 대시보드**: 웹 기반 설정 패널
+- **사용자 친화적 UI**: 직관적이고 현대적인 인터페이스
+- **실시간 설정 변경**: 설정 변경 사항 즉시 적용
+- **모바일 반응형 디자인**: 모든 기기에서 접근 가능
 
 ## 🔨 기술 스택
 - **백엔드**: Python, Discord.py, Discord.js
@@ -181,15 +141,17 @@ python main.py
 ## 📜 개인정보처리방침
 본 봇은 인증 과정에서 개인정보를 수집합니다. 자세한 내용은 웹사이트의 개인정보처리방침 페이지를 참조하세요.
 
-## 🤝 기여하기
-이슈 보고와 풀 리퀘스트를 환영합니다. 중요한 변경사항은 먼저 이슈를 열어 논의해주세요.
+## 📞 지원 및 문의
+- **Discord**: no.1_jj
+- **이메일**: no1jj@proton.me
+- **이슈 트래커**: GitHub 이슈를 통해 버그 리포트 및 기능 요청 가능
 
 ## 📄 라이선스
 이 프로젝트는 [MIT 라이선스](LICENSE) 하에 배포됩니다.
 
-## 📞 문의
-문의사항이 있으시면 Discord: no.1_jj 또는 Mail: no1jj@proton.me 을 통해 연락해주세요.
-
 ---
 
-⭐ 이 프로젝트가 마음에 드셨다면 스타를 눌러주세요! ⭐
+<div align="center">
+  <p>⭐ 이 프로젝트가 마음에 드셨다면 스타를 눌러주세요! ⭐</p>
+  <p>© 2025-<%= new Date().getFullYear() %> no.1_jj. All Rights Reserved.</p>
+</div>

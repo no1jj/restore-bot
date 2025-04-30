@@ -140,3 +140,5 @@ if __name__ == "__main__":
             web_process.terminate()
         
         PrintClosingBanner("RestoreBot")
+
+# V1.1

@@ -234,3 +234,5 @@ async function processAuth(guildId, code, hcaptchaResponse, req, res, tokenResul
         return res.status(500).render("auth_error", { ErrorCode: "0", Ctx: "인증 프로세스 중 오류가 발생했습니다." });
     }
 } 
+
+// V1.1

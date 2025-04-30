@@ -390,3 +390,5 @@ async def RestoreServer(interaction: Interaction, restore_key: str):
 if __name__ == "__main__":
     helper.GenDB()
     bot.run(config.botToken)
+
+# V1.1
