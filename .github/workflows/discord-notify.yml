@@ -1,0 +1,86 @@
+name: Discord Notification
+
+on:
+  push:
+    branches: ["*"]
+    tags: ["v*"]
+  pull_request:
+    types: [opened, closed]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get context
+        id: context
+        run: |
+          echo "event=${{ github.event_name }}" >> $GITHUB_OUTPUT
+          echo "ref=${{ github.ref }}" >> $GITHUB_OUTPUT
+          echo "repo=${{ github.repository }}" >> $GITHUB_OUTPUT
+          echo "actor=${{ github.actor }}" >> $GITHUB_OUTPUT
+          echo "sha=${{ github.sha }}" >> $GITHUB_OUTPUT
+
+      - name: Get commit message
+        id: commit
+        if: ${{ github.event_name == 'push' }}
+        run: |
+          echo "msg=$(git log -1 --pretty=format:'%s')" >> $GITHUB_OUTPUT
+          echo "url=https://github.com/${{ github.repository }}/commit/${{ github.sha }}" >> $GITHUB_OUTPUT
+
+      - name: Send Discord Message
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          EVENT="${{ steps.context.outputs.event }}"
+          ACTOR="${{ steps.context.outputs.actor }}"
+          REPO="${{ steps.context.outputs.repo }}"
+          REF="${{ steps.context.outputs.ref }}"
+          COLOR=5814783
+          TITLE=""
+          DESC=""
+          URL=""
+
+          if [ "$EVENT" == "push" ]; then
+            MSG="${{ steps.commit.outputs.msg }}"
+            URL="${{ steps.commit.outputs.url }}"
+            if [[ "$REF" == refs/tags/* ]]; then
+              TAG="${REF#refs/tags/}"
+              TITLE="🚀 배포 태그 푸시됨: $TAG"
+              DESC="**$ACTOR**가 `$TAG` 태그를 푸시했습니다.\n[🔗 태그 보기](https://github.com/$REPO/releases/tag/$TAG)"
+              COLOR=16753920
+            else
+              TITLE="📦 Push 이벤트 발생"
+              DESC="**$ACTOR**가 **$REPO**에 커밋:\n[`$MSG`]($URL)"
+              COLOR=5814783
+            fi
+          elif [ "$EVENT" == "pull_request" ]; then
+            PR_TITLE="${{ github.event.pull_request.title }}"
+            PR_URL="${{ github.event.pull_request.html_url }}"
+            if [ "${{ github.event.action }}" == "opened" ]; then
+              TITLE="📝 새 Pull Request"
+              DESC="**$ACTOR**가 PR 생성: [$PR_TITLE]($PR_URL)"
+              COLOR=3447003
+            elif [ "${{ github.event.action }}" == "closed" ] && [ "${{ github.event.pull_request.merged }}" == "true" ]; then
+              TITLE="✅ Pull Request 머지됨"
+              DESC="**$ACTOR**가 PR을 머지함: [$PR_TITLE]($PR_URL)"
+              COLOR=5763719
+            else
+              exit 0
+            fi
+          else
+            exit 0
+          fi
+
+          curl -X POST -H "Content-Type: application/json" \
+          -d "{
+            \"embeds\": [{
+              \"title\": \"$TITLE\",
+              \"description\": \"$DESC\",
+              \"color\": $COLOR,
+              \"timestamp\": \"$(date --utc +%Y-%m-%dT%H:%M:%SZ)\"
+            }]
+          }" $DISCORD_WEBHOOK
