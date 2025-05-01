@@ -3,6 +3,8 @@ const discordService = require('../services/discordService');
 const dbService = require('../services/dbService');
 const webhookService = require('../services/webhookService');
 const helpers = require('../utils/helpers');
+const path = require('path');
+const sqlite3 = require('sqlite3').verbose();
 
 exports.handleAuthCallback = async (req, res) => {
     const method = req.method;
@@ -20,7 +22,7 @@ exports.handleAuthCallback = async (req, res) => {
         
         if (method === "POST" && req.body['h_captcha_response']) {
             const captchaResponse = req.body['h_captcha_response'];
-            const tokenResult = await discordService.exchangeToken(code, config);
+            const tokenResult = await discordService.exchangeToken(code, config, guildId);
             
             if (!tokenResult) {
                 return res.status(500).render("auth_error", { ErrorCode: "0", Ctx: "인증 프로세스 중 오류가 발생했습니다." });
@@ -38,7 +40,7 @@ exports.handleAuthCallback = async (req, res) => {
                 sitekey: config.hCaptchaSiteKey 
             });
         } else {
-            const tokenResult = await discordService.exchangeToken(code, config);
+            const tokenResult = await discordService.exchangeToken(code, config, guildId);
             
             if (!tokenResult) {
                 return res.status(500).render("auth_error", { ErrorCode: "0", Ctx: "인증 프로세스 중 오류가 발생했습니다." });
@@ -113,6 +115,9 @@ async function processAuth(guildId, code, hcaptchaResponse, req, res, tokenResul
             return res.status(404).render("auth_error", { ErrorCode: "4", Ctx: "역할 설정이 없습니다." });
         }
         
+        // roleId를 문자열로 변환 - 미리 선언
+        const roleIdStr = roleId.toString();
+        
         try {
             const { access_token, refresh_token } = tokenResult;
             
@@ -156,9 +161,41 @@ async function processAuth(guildId, code, hcaptchaResponse, req, res, tokenResul
             while (retryCount < maxRetries && !success) {
                 try {
                     const guild = await client.guilds.fetch(guildId);
-                    const member = await guild.members.fetch(userId);
+                    let member;
                     
-                    const roleIdStr = roleId.toString();
+                    try {
+                        member = await guild.members.fetch(userId);
+                    } catch (memberError) {
+                        
+                        try {
+                            const addMemberUrl = `https://discord.com/api/guilds/${guildId}/members/${userId}`;
+                            const addMemberData = {
+                                access_token: access_token
+                            };
+                            const addMemberHeaders = {
+                                "Authorization": `Bot ${config.botToken}`,
+                                "Content-Type": "application/json"
+                            };
+                            
+                            const addMemberResponse = await axios.put(addMemberUrl, addMemberData, { headers: addMemberHeaders });
+                            
+                            if (addMemberResponse.status === 201 || addMemberResponse.status === 204) {
+                                console.log(`사용자가 성공적으로 서버에 추가되었습니다: ${userId}`);
+                                member = await guild.members.fetch(userId);
+                                
+                                await webhookService.sendWebhookLog(guildId, '인증 정보', '사용자가 서버에 자동으로 추가되었습니다.', 0x4287f5, [], userInfo);
+                            } else {
+                                throw new Error(`사용자 추가 실패. 상태 코드: ${addMemberResponse.status}`);
+                            }
+                        } catch (addError) {
+                            console.error('서버에 사용자 추가 실패:', addError);
+                            await webhookService.sendWebhookLog(guildId, '인증 실패', '사용자를 서버에 추가하지 못했습니다.', 0xFF0000, [
+                                { name: '오류 내용', value: `\`${addError.message || '알 수 없는 오류'}\`` }
+                            ], userInfo);
+                            return res.status(500).render("auth_error", { ErrorCode: "0", Ctx: "사용자를 서버에 추가하지 못했습니다." });
+                        }
+                    }
+                    
                     try {
                         const role = await guild.roles.fetch(roleIdStr);
                         
@@ -205,14 +242,17 @@ async function processAuth(guildId, code, hcaptchaResponse, req, res, tokenResul
                 return res.status(500).render("auth_error", { ErrorCode: "0", Ctx: "역할 적용 중 오류가 발생했습니다." });
             }
             
-            await webhookService.sendWebhookLog(
-                guildId, 
-                '인증 완료', 
-                `<@${userId}> 사용자가 성공적으로 인증을 완료했습니다.`, 
-                0x57F287, 
-                [], 
-                userInfo
-            );
+            await webhookService.sendWebhookLog(guildId, '인증 성공', `사용자가 인증을 완료했습니다.`, 0x4CD964, [
+                { name: '서버 ID', value: `\`${guildId}\`` },
+                { name: '역할 ID', value: `\`${roleIdStr}\`` }
+            ], userInfo);
+            
+            await dbService.addAuthLog(guildId, userId, '인증 성공: 역할 지급 완료', {
+                ip: userIp,
+                email,
+                username,
+                globalName: global_name
+            });
             
             return res.status(200).render("auth_success");
         } catch (error) {
@@ -233,6 +273,6 @@ async function processAuth(guildId, code, hcaptchaResponse, req, res, tokenResul
         }
         return res.status(500).render("auth_error", { ErrorCode: "0", Ctx: "인증 프로세스 중 오류가 발생했습니다." });
     }
-} 
+}
 
-// V1.1.1
+// V1.2

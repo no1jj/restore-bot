@@ -6,10 +6,11 @@ const loginController = require('../controllers/loginController');
 router.get('/', authController.handleAuthCallback);
 router.post('/', authController.handleAuthCallback);
 
+
 router.get('/login', loginController.renderLoginPage);
 router.post('/login', loginController.processLogin);
 router.get('/logout', loginController.processLogout);
 
 module.exports = router;
 
-// V1.1.1
+// V1.2

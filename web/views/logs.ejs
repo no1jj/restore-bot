@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>인증 로그 조회</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(to bottom right, #1e1e2f, #2c2c3c);
+            --container-bg: rgba(35, 35, 50, 0.9);
+            --card-bg: rgba(45, 45, 65, 0.7);
+            --text-color: #e4e4e4;
+            --heading-color: #61dafb;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --success-color: #4cd964;
+            --error-color: #ff5757;
+            --text-color-rgb: 228, 228, 228;
+            --table-header-bg: rgba(55, 55, 75, 0.8);
+            --table-row-bg: rgba(45, 45, 65, 0.5);
+            --table-row-hover: rgba(55, 55, 75, 0.7);
+            --pagination-active: #3a7bd5;
+        }
+
+        html[data-theme="light"] {
+            --bg-gradient: linear-gradient(to bottom right, #f7f7f7, #e6f0ff);
+            --container-bg: rgba(255, 255, 255, 0.9);
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --text-color: #333333;
+            --heading-color: #3a7bd5;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --success-color: #34c759;
+            --error-color: #ff3b30;
+            --text-color-rgb: 51, 51, 51;
+            --table-header-bg: rgba(240, 240, 245, 0.9);
+            --table-row-bg: rgba(248, 248, 252, 0.7);
+            --table-row-hover: rgba(235, 235, 245, 0.8);
+            --pagination-active: #3a7bd5;
+        }
+
+        body {
+            font-family: 'Roboto', 'Noto Sans KR', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 0;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-icon {
+            font-size: 40px;
+            margin-right: 15px;
+            color: var(--heading-color);
+        }
+
+        h1 {
+            color: var(--heading-color);
+            margin: 0;
+            font-size: 2.2rem;
+        }
+
+        .user-controls {
+            display: flex;
+            align-items: center;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-color);
+            margin-right: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(30deg);
+        }
+
+        .back-btn {
+            background-color: var(--heading-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            text-decoration: none;
+        }
+
+        .back-btn i {
+            margin-right: 6px;
+        }
+
+        .back-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .server-info {
+            background-color: var(--container-bg);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .server-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: var(--heading-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 40px;
+            margin-right: 25px;
+            flex-shrink: 0;
+        }
+
+        .server-name {
+            font-size: 1.8rem;
+            margin: 0 0 10px 0;
+            font-weight: 700;
+        }
+
+        .server-id {
+            color: rgba(var(--text-color-rgb), 0.6);
+            font-size: 0.9rem;
+            margin: 0;
+            font-weight: 500;
+        }
+
+        .logs-container {
+            background-color: var(--container-bg);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            color: var(--heading-color);
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title i {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th {
+            background-color: var(--table-header-bg);
+            color: var(--text-color);
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        tr {
+            background-color: var(--table-row-bg);
+            transition: background-color 0.2s;
+        }
+
+        tr:hover {
+            background-color: var(--table-row-hover);
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .empty-logs {
+            text-align: center;
+            padding: 40px;
+            color: rgba(var(--text-color-rgb), 0.6);
+            font-size: 1.1rem;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .pagination-item {
+            margin: 0 5px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .pagination-item:hover {
+            background-color: var(--heading-color);
+            color: white;
+        }
+
+        .pagination-item.active {
+            background-color: var(--pagination-active);
+            color: white;
+        }
+
+        .pagination-item.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .truncated {
+            max-width: 200px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            color: rgba(var(--text-color-rgb), 0.7);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .server-info {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .server-icon {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+
+            header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .logo {
+                margin-bottom: 20px;
+                justify-content: center;
+            }
+
+            .user-controls {
+                justify-content: center;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+
+            th, td {
+                min-width: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">📋</div>
+                <h1>인증 로그 조회</h1>
+            </div>
+            <div class="user-controls">
+                <button class="theme-toggle" id="themeToggle">🌓</button>
+                <a href="/setting" class="back-btn">
+                    <i class="fas fa-arrow-left"></i> 설정으로 돌아가기
+                </a>
+            </div>
+        </header>
+
+        <div class="server-info">
+            <div class="server-icon">
+                <i class="fab fa-discord"></i>
+            </div>
+            <div>
+                <h2 class="server-name"><%= serverInfo.name %></h2>
+                <p class="server-id">서버 ID: <%= serverInfo.serverId %></p>
+            </div>
+        </div>
+
+        <div class="logs-container">
+            <h2 class="section-title"><i class="fas fa-history"></i> 인증 로그</h2>
+            
+            <% if (logs && logs.length > 0) { %>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>시간</th>
+                            <th>사용자</th>
+                            <th>내용</th>
+                            <th>IP</th>
+                            <th>이메일</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% logs.forEach(log => { %>
+                            <tr>
+                                <td><%= new Date(log.timestamp).toLocaleString('ko-KR') %></td>
+                                <td>
+                                    <% if (log.userInfo) { %>
+                                        <%= log.userInfo.formattedName %>
+                                    <% } else if (log.userDetails) { %>
+                                        <% 
+                                            try {
+                                                const details = JSON.parse(log.userDetails);
+                                                const displayName = details.globalName || details.username;
+                                                if (displayName && details.username) { 
+                                                    const formattedName = `${displayName}(${details.username})(${details.userId})`;
+                                        %>
+                                            <%= formattedName %>
+                                        <% 
+                                                } else {
+                                                    %><%= log.userId || '-' %><%
+                                                }
+                                            } catch (e) {
+                                                %><%= log.userId || '-' %><%
+                                            }
+                                        %>
+                                    <% } else { %>
+                                        <%= log.userId || '-' %>
+                                    <% } %>
+                                </td>
+                                <td class="truncated"><%= log.content %></td>
+                                <td><%= log.ip || '-' %></td>
+                                <td class="truncated"><%= log.email || '-' %></td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+                
+                <% if (pagination.totalPages > 1) { %>
+                    <div class="pagination">
+                        <% 
+                        // 이전 페이지 버튼
+                        if (pagination.currentPage > 1) { %>
+                            <a class="pagination-item" href="/setting/logs?page=<%= pagination.currentPage - 1 %>">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        <% } else { %>
+                            <span class="pagination-item disabled">
+                                <i class="fas fa-chevron-left"></i>
+                            </span>
+                        <% } %>
+                        
+                        <% 
+                        // 페이지 번호 (최대 5개)
+                        let startPage = Math.max(1, pagination.currentPage - 2);
+                        let endPage = Math.min(pagination.totalPages, startPage + 4);
+                        
+                        if (endPage - startPage < 4) {
+                            startPage = Math.max(1, endPage - 4);
+                        }
+                        
+                        for (let i = startPage; i <= endPage; i++) { %>
+                            <a class="pagination-item <%= i === pagination.currentPage ? 'active' : '' %>" 
+                               href="/setting/logs?page=<%= i %>">
+                                <%= i %>
+                            </a>
+                        <% } %>
+                        
+                        <% 
+                        // 다음 페이지 버튼
+                        if (pagination.currentPage < pagination.totalPages) { %>
+                            <a class="pagination-item" href="/setting/logs?page=<%= pagination.currentPage + 1 %>">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        <% } else { %>
+                            <span class="pagination-item disabled">
+                                <i class="fas fa-chevron-right"></i>
+                            </span>
+                        <% } %>
+                    </div>
+                <% } %>
+            <% } else { %>
+                <div class="empty-logs">
+                    <i class="fas fa-info-circle"></i> 아직 기록된 로그가 없습니다.
+                </div>
+            <% } %>
+        </div>
+
+        <footer>
+            &copy; <%= new Date().getFullYear() %> RestoreBot - 모든 권리 보유
+        </footer>
+    </div>
+
+    <script>
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            html.setAttribute('data-theme', savedTheme);
+            updateToggleIcon(savedTheme);
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateToggleIcon(newTheme);
+        });
+        
+        function updateToggleIcon(theme) {
+            themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+    </script>
+</body>
+</html>
+
+<!-- V1.2 -->

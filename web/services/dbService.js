@@ -587,6 +587,44 @@ exports.checkIsBlacklisted = async (userId, ip, email) => {
     }
 };
 
+/**
+ * 인증 로그 추가
+ * @param {string} guildId - 서버 ID
+ * @param {string} userId - 사용자 ID
+ * @param {string} content - 로그 내용
+ * @param {object} userInfo - 사용자 정보 객체 (username, globalName, ip, email)
+ */
+exports.addAuthLog = (guildId, userId, content, userInfo = {}) => {
+    try {
+        const conn = loadDB(guildId);
+        if (!conn) {
+            return;
+        }
+        
+        const { ip, email, username, globalName } = userInfo;
+        const userDetails = {
+            userId,
+            username,
+            globalName
+        };
+        
+        const userDetailsJson = JSON.stringify(userDetails);
+        
+        conn.run(
+            "INSERT INTO Logs (userId, content, ip, email, userDetails) VALUES (?, ?, ?, ?, ?)", 
+            [userId, content, ip || null, email || null, userDetailsJson], 
+            (err) => {
+                if (err) {
+                    console.error(`인증 로그 추가 실패: ${err}`);
+                }
+                conn.close();
+            }
+        );
+    } catch (error) {
+        console.error(`인증 로그 추가 실패: ${error}`);
+    }
+};
+
 exports.loadDB = loadDB; 
 
-// V1.1.1
+// V1.2

@@ -4,9 +4,10 @@ const axios = require('axios');
  * 디스코드 인증 토큰 교환
  * @param {string} code - 인증 코드
  * @param {object} config - 앱 설정
+ * @param {string} serverId - 서버 ID
  * @returns {object|null} 토큰 정보 또는 실패 시 null
  */
-exports.exchangeToken = async (code, config) => {
+exports.exchangeToken = async (code, config, serverId) => {
     try {
         const redirectUri = `${config.domain}/verify`;
         
@@ -185,4 +186,4 @@ exports.createSuccessEmbed = (title, description) => {
     });
 }; 
 
-// V1.1.1
+// V1.2

@@ -20,4 +20,4 @@ router.get('/invite', (req, res) => {
 
 module.exports = router; 
 
-// V1.1.1
+// V1.2

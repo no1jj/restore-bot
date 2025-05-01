@@ -141,4 +141,4 @@ if __name__ == "__main__":
         
         PrintClosingBanner("RestoreBot")
 
-# V1.1.1
+# V1.2

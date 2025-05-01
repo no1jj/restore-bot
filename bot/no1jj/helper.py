@@ -135,6 +135,15 @@ def GenServerDB(serverId: str, name: str, date: str, key: str):
                                 ip TEXT,
                                 serviceToken TEXT
                             )''')
+            cursor.execute('''CREATE TABLE IF NOT EXISTS Logs (
+                                logId INTEGER PRIMARY KEY AUTOINCREMENT,
+                                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                                userId TEXT,
+                                content TEXT NOT NULL,
+                                ip TEXT,
+                                email TEXT,
+                                userDetails TEXT
+                            )''')
             cursor.execute('''INSERT INTO Info (
                                 name, id, date, key) 
                                 VALUES (?, ?, ?, ?)''', 
@@ -481,4 +490,4 @@ async def UpdateRefreshToken(old_token, new_token):
         except Exception as e:
             print(f"DB {db_file} 업데이트 중 오류: {str(e)}")
 
-# V1.1.1
+# V1.2

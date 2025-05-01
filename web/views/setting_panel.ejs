@@ -75,6 +75,128 @@
             color: var(--heading-color);
         }
 
+        .hamburger-menu {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-color);
+            margin-right: 20px;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 20px;
+            position: relative;
+            z-index: 1001;
+        }
+
+        .hamburger-menu:hover {
+            color: var(--heading-color);
+        }
+
+        .hamburger-menu span {
+            width: 24px;
+            height: 2px;
+            background-color: var(--text-color);
+            display: block;
+            transition: all 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .hamburger-menu:hover span {
+            background-color: var(--heading-color);
+        }
+
+        .side-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 280px;
+            background-color: var(--container-bg);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+            border-right: 1px solid var(--border-color);
+            z-index: 1000;
+            display: none;
+            overflow-y: auto;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            padding-top: 20px;
+        }
+
+        .side-menu.active {
+            display: block;
+            transform: translateX(0);
+        }
+        
+        .side-menu-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 10px;
+        }
+        
+        .side-menu-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--heading-color);
+        }
+        
+        .close-side-menu {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+        }
+        
+        .close-side-menu:hover {
+            color: var(--heading-color);
+        }
+
+        .side-menu-item {
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.2s;
+            color: var(--text-color);
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 0 10px 5px 10px;
+        }
+
+        .side-menu-item:hover {
+            background-color: rgba(97, 218, 251, 0.1);
+        }
+        
+        .side-menu-item.active {
+            background-color: rgba(97, 218, 251, 0.2);
+            font-weight: 600;
+        }
+
+        .side-menu-item i {
+            margin-right: 10px;
+            width: 25px;
+            font-size: 1.1rem;
+            text-align: center;
+            color: var(--heading-color);
+        }
+
+        .side-menu-item:first-child {
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+
+        .side-menu-item:last-child {
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+
         h1 {
             color: var(--heading-color);
             margin: 0;
@@ -98,6 +220,83 @@
 
         .theme-toggle:hover {
             transform: rotate(30deg);
+        }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text-color);
+            margin-right: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .menu-toggle:hover {
+            color: var(--heading-color);
+        }
+
+        .category-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            z-index: 100;
+            min-width: 150px;
+            display: none;
+        }
+
+        .category-menu.active {
+            display: block;
+            animation: fadeIn 0.3s forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .category-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.2s;
+            color: var(--text-color);
+            text-decoration: none;
+        }
+
+        .category-item:hover {
+            background-color: rgba(97, 218, 251, 0.1);
+        }
+
+        .category-item i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .category-item.active {
+            background-color: rgba(97, 218, 251, 0.2);
+            font-weight: 600;
+        }
+
+        .section-container {
+            display: none;
+        }
+
+        .section-container.active {
+            display: block;
+            animation: fadeInUp 0.4s forwards;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .logout-btn {
@@ -124,40 +323,51 @@
         }
 
         .server-info {
-            background-color: var(--container-bg);
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 30px;
             display: flex;
             align-items: center;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-            border: 1px solid var(--border-color);
+            margin-left: 20px;
         }
-
+        
         .server-icon {
-            width: 80px;
-            height: 80px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
-            background-color: var(--heading-color);
+            margin-right: 15px;
+            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 40px;
-            margin-right: 25px;
-            flex-shrink: 0;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
         }
-
+        
+        .server-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .server-icon i {
+            font-size: 24px;
+            color: var(--heading-color);
+        }
+        
+        .server-details {
+            display: flex;
+            flex-direction: column;
+        }
+        
         .server-name {
-            font-size: 1.8rem;
-            margin: 0 0 10px 0;
-            font-weight: 700;
-        }
-
-        .server-id {
-            color: rgba(var(--text-color-rgb), 0.6);
-            font-size: 0.9rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--heading-color);
             margin: 0;
-            font-weight: 500;
+        }
+        
+        .server-id {
+            font-size: 0.8rem;
+            color: rgba(var(--text-color-rgb), 0.7);
+            margin: 0;
         }
 
         .cards-container {
@@ -279,6 +489,12 @@
             -moz-appearance: none;
         }
 
+        .form-control:focus {
+            outline: none;
+            border-color: var(--heading-color);
+            box-shadow: 0 0 0 2px rgba(97, 218, 251, 0.2);
+        }
+
         .select-wrapper {
             position: relative;
         }
@@ -305,9 +521,140 @@
             color: var(--text-color);
         }
 
-        .form-control:focus {
-            outline: none;
-            border-color: var(--heading-color);
+        .enhanced-select {
+            background-color: rgba(35, 35, 50, 0.7);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            max-height: 250px;
+            overflow-y: auto;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: none;
+            position: absolute;
+            width: 100%;
+            z-index: 10;
+        }
+
+        .select-option {
+            padding: 10px 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+
+        .select-option:hover {
+            background-color: rgba(97, 218, 251, 0.1);
+        }
+
+        .select-option.selected {
+            background-color: rgba(97, 218, 251, 0.2);
+        }
+
+        .select-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: rgba(35, 35, 50, 0.5);
+            cursor: pointer;
+        }
+
+        .auth-message-card {
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s ease;
+            margin-top: 30px;
+        }
+
+        .auth-message-card h2 {
+            color: var(--heading-color);
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .auth-message-card h2 i {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        .auth-form {
+            margin-top: 20px;
+        }
+
+        .auth-preview {
+            border: 1px dashed var(--border-color);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            background-color: rgba(35, 35, 50, 0.3);
+        }
+
+        .auth-preview-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--heading-color);
+            margin-bottom: 10px;
+        }
+
+        .auth-preview-description {
+            margin-bottom: 15px;
+        }
+
+        .auth-preview-button {
+            display: inline-block;
+            background-color: #2ecc71;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .auth-description {
+            font-size: 0.9rem;
+            margin-top: 15px;
+            color: var(--text-color);
+            opacity: 0.8;
+        }
+
+        .auth-preview-privacy {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px dashed var(--border-color);
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .send-auth-btn {
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            margin-top: 15px;
+        }
+
+        .send-auth-btn i {
+            margin-right: 8px;
+        }
+
+        .send-auth-btn:hover {
+            background-color: #3ca451;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 217, 100, 0.4);
         }
 
         .role-option {
@@ -435,15 +782,98 @@
             .user-controls {
                 justify-content: center;
             }
+            
+            .side-menu {
+                width: 85%;
+            }
+        }
+        
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .overlay.active {
+            display: block;
+            opacity: 1;
+        }
+
+        .menu-container {
+            position: relative;
+        }
+
+        .privacy-notice {
+            background-color: rgba(255, 193, 7, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 193, 7, 0.5);
+        }
+        
+        .privacy-notice h3 {
+            margin-top: 0;
+            color: #ffc107;
+            font-size: 1.1rem;
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <div class="overlay" id="overlay"></div>
         <header>
             <div class="logo">
+                <div class="menu-container">
+                    <button class="hamburger-menu" id="hamburgerMenu">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                    <div class="side-menu" id="sideMenu">
+                        <div class="side-menu-header">
+                            <div class="side-menu-title">RestoreBot 메뉴</div>
+                            <button class="close-side-menu" id="closeSideMenu">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="side-menu-item" data-action="settings">
+                            <i class="fas fa-cog"></i> 서버 설정
+                        </div>
+                        <div class="side-menu-item" data-action="auth">
+                            <i class="fas fa-paper-plane"></i> 인증 메세지 전송
+                        </div>
+                        <div class="side-menu-item" data-action="logs">
+                            <i class="fas fa-history"></i> 로그 조회
+                        </div>
+                        <div class="side-menu-item" data-action="backup">
+                            <i class="fas fa-database"></i> 서버 복구
+                        </div>
+                        <div class="side-menu-item" data-action="help">
+                            <i class="fas fa-question-circle"></i> 도움말
+                        </div>
+                    </div>
+                </div>
                 <div class="logo-icon">🔐</div>
-                <h1>설정 관리 패널</h1>
+                <div class="server-info">
+                    <div class="server-icon">
+                        <% if (serverInfo.iconURL) { %>
+                            <img src="<%= serverInfo.iconURL %>" alt="<%= serverInfo.name %>">
+                        <% } else { %>
+                            <i class="fab fa-discord"></i>
+                        <% } %>
+                    </div>
+                    <div class="server-details">
+                        <h2 class="server-name"><%= serverInfo.name %></h2>
+                        <p class="server-id">서버 ID: <%= serverInfo.serverId %></p>
+                    </div>
+                </div>
             </div>
             <div class="user-controls">
                 <button class="theme-toggle" id="themeToggle">🌓</button>
@@ -465,107 +895,152 @@
         </div>
         <% } %>
 
-        <div class="server-info">
-            <div class="server-icon">
-                <i class="fab fa-discord"></i>
-            </div>
-            <div>
-                <h2 class="server-name"><%= serverInfo.name %></h2>
-                <p class="server-id">서버 ID: <%= serverInfo.serverId %></p>
-            </div>
-        </div>
-
         <form action="/setting/update" method="POST">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             
-            <div class="cards-container">
-                <div class="card">
-                    <h2><i class="fas fa-shield-alt"></i> 보안 설정</h2>
-                    
-                    <div class="setting-group">
-                        <div class="switch-container">
-                            <div class="switch-label">캡차 사용</div>
-                            <label class="switch">
-                                <input type="checkbox" name="useCaptcha" <%= settings.useCaptcha ? 'checked' : '' %>>
-                                <span class="slider"></span>
-                            </label>
+            <div class="section-container active" id="settingsSection">
+                <div class="cards-container">
+                    <div class="card">
+                        <h2><i class="fas fa-shield-alt"></i> 보안 설정</h2>
+                        
+                        <div class="setting-group">
+                            <div class="switch-container">
+                                <div class="switch-label">캡차 사용</div>
+                                <label class="switch">
+                                    <input type="checkbox" name="useCaptcha" <%= settings.useCaptcha ? 'checked' : '' %>>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div class="switch-container">
+                                <div class="switch-label">VPN 차단</div>
+                                <label class="switch">
+                                    <input type="checkbox" name="blockVpn" <%= settings.blockVpn ? 'checked' : '' %>>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h2><i class="fas fa-user-shield"></i> 권한 설정</h2>
+                        
+                        <div class="input-group">
+                            <label for="roleId">인증 역할</label>
+                            <div class="select-wrapper">
+                                <select id="roleId" name="roleId" class="form-control">
+                                    <option value="0">역할 선택 안함</option>
+                                    <% roles.forEach(role => { %>
+                                        <option value="<%= role.id %>" 
+                                                <%= settings.roleId === role.id ? 'selected' : '' %>
+                                                data-color="<%= role.color %>">
+                                            <%= role.name %>
+                                        </option>
+                                    <% }); %>
+                                </select>
+                            </div>
                         </div>
                         
-                        <div class="switch-container">
-                            <div class="switch-label">VPN 차단</div>
-                            <label class="switch">
-                                <input type="checkbox" name="blockVpn" <%= settings.blockVpn ? 'checked' : '' %>>
-                                <span class="slider"></span>
-                            </label>
+                        <div id="selectedRole" class="role-preview" style="margin-top: 10px; display: none;">
+                            <div class="role-option">
+                                <span class="role-color" id="roleColor"></span>
+                                <span class="role-name" id="roleName"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h2><i class="fas fa-history"></i> 로깅 설정</h2>
+                        
+                        <div class="setting-group">
+                            <div class="switch-container">
+                                <div class="switch-label">IP 로깅</div>
+                                <label class="switch">
+                                    <input type="checkbox" name="loggingIp" <%= settings.loggingIp ? 'checked' : '' %>>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div class="switch-container">
+                                <div class="switch-label">이메일 로깅</div>
+                                <label class="switch">
+                                    <input type="checkbox" name="loggingMail" <%= settings.loggingMail ? 'checked' : '' %>>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="loggingChannelId">로깅 채널</label>
+                            <div class="select-wrapper">
+                                <select id="loggingChannelId" name="loggingChannelId" class="form-control">
+                                    <option value="0">채널 선택 안함</option>
+                                    <% 
+                                    let lastParent = '';
+                                    channels.forEach(channel => {
+                                        if (lastParent !== channel.parentName) {
+                                            lastParent = channel.parentName;
+                                            %>
+                                            <optgroup label="<%= channel.parentName %>">
+                                        <% } %>
+                                        
+                                        <option value="<%= channel.id %>" 
+                                                data-parent="<%= channel.parentName %>"
+                                                <%= settings.loggingChannelId === channel.id ? 'selected' : '' %>>
+                                            #<%= channel.name %>
+                                        </option>
+                                        
+                                        <% if (channels[channels.indexOf(channel) + 1] && 
+                                               channels[channels.indexOf(channel) + 1].parentName !== channel.parentName) { %>
+                                            </optgroup>
+                                        <% } %>
+                                    <% }); %>
+                                </select>
+                            </div>
+                            <div id="selectedChannel" class="channel-preview" style="margin-top: 10px; display: none;">
+                                <div class="role-option">
+                                    <span style="color: #7289da; margin-right: 8px;"><i class="fas fa-hashtag"></i></span>
+                                    <span class="channel-name" id="channelName"></span>
+                                    <span class="channel-category" id="channelCategory" style="margin-left: 8px; opacity: 0.7; font-size: 0.9em;"></span>
+                                </div>
+                            </div>
+                            <div class="info-text" style="margin-top: 10px; font-size: 0.85rem; opacity: 0.8;">
+                                <i class="fas fa-info-circle"></i> 채널을 선택하면 자동으로 웹훅이 생성됩니다.
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="card">
-                    <h2><i class="fas fa-user-shield"></i> 권한 설정</h2>
-                    
-                    <div class="input-group">
-                        <label for="roleId">인증 역할</label>
-                        <div class="select-wrapper">
-                            <select id="roleId" name="roleId" class="form-control">
-                                <option value="0">역할 선택 안함</option>
-                                <% roles.forEach(role => { %>
-                                    <option value="<%= role.id %>" 
-                                            <%= settings.roleId === role.id ? 'selected' : '' %>
-                                            data-color="<%= role.color %>">
-                                        <%= role.name %>
-                                    </option>
-                                <% }); %>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div id="selectedRole" class="role-preview" style="margin-top: 10px; display: none;">
-                        <div class="role-option">
-                            <span class="role-color" id="roleColor"></span>
-                            <span class="role-name" id="roleName"></span>
-                        </div>
-                    </div>
+                <div class="form-actions">
+                    <button type="submit" class="save-btn">
+                        <i class="fas fa-save"></i> 설정 저장
+                    </button>
                 </div>
+            </div>
+        </form>
 
-                <div class="card">
-                    <h2><i class="fas fa-history"></i> 로깅 설정</h2>
-                    
-                    <div class="setting-group">
-                        <div class="switch-container">
-                            <div class="switch-label">IP 로깅</div>
-                            <label class="switch">
-                                <input type="checkbox" name="loggingIp" <%= settings.loggingIp ? 'checked' : '' %>>
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        
-                        <div class="switch-container">
-                            <div class="switch-label">이메일 로깅</div>
-                            <label class="switch">
-                                <input type="checkbox" name="loggingMail" <%= settings.loggingMail ? 'checked' : '' %>>
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                    </div>
-                    
+        <div class="section-container" id="authSection">
+            <div class="auth-message-card">
+                <h2><i class="fas fa-user-check"></i> 인증 메시지 전송</h2>
+                <p>선택한 채널에 인증 메시지를 전송합니다. 사용자가 인증 버튼을 클릭하면 설정된 역할이 부여됩니다.</p>
+                
+                <div class="auth-form">
                     <div class="input-group">
-                        <label for="loggingChannelId">로깅 채널</label>
+                        <label for="authChannelId">메시지를 전송할 채널</label>
                         <div class="select-wrapper">
-                            <select id="loggingChannelId" name="loggingChannelId" class="form-control">
-                                <option value="0">채널 선택 안함</option>
+                            <select id="authChannelId" class="form-control">
+                                <option value="0">채널 선택</option>
                                 <% 
-                                let lastParent = '';
+                                let lastAuthParent = '';
                                 channels.forEach(channel => {
-                                    if (lastParent !== channel.parentName) {
-                                        lastParent = channel.parentName;
+                                    if (lastAuthParent !== channel.parentName) {
+                                        lastAuthParent = channel.parentName;
                                         %>
                                         <optgroup label="<%= channel.parentName %>">
                                     <% } %>
                                     
                                     <option value="<%= channel.id %>" 
-                                            data-parent="<%= channel.parentName %>"
-                                            <%= settings.loggingChannelId === channel.id ? 'selected' : '' %>>
+                                            data-parent="<%= channel.parentName %>">
                                         #<%= channel.name %>
                                     </option>
                                     
@@ -576,26 +1051,43 @@
                                 <% }); %>
                             </select>
                         </div>
-                        <div id="selectedChannel" class="channel-preview" style="margin-top: 10px; display: none;">
-                            <div class="role-option">
-                                <span style="color: #7289da; margin-right: 8px;"><i class="fas fa-hashtag"></i></span>
-                                <span class="channel-name" id="channelName"></span>
-                                <span class="channel-category" id="channelCategory" style="margin-left: 8px; opacity: 0.7; font-size: 0.9em;"></span>
-                            </div>
-                        </div>
-                        <div class="info-text" style="margin-top: 10px; font-size: 0.85rem; opacity: 0.8;">
-                            <i class="fas fa-info-circle"></i> 채널을 선택하면 자동으로 웹훅이 생성됩니다.
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="authTitle">임베드 제목</label>
+                        <input type="text" id="authTitle" class="form-control" placeholder="인증 메시지의 제목을 입력하세요" value="서버 인증">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="authDescription">임베드 설명</label>
+                        <textarea id="authDescription" class="form-control" rows="3" placeholder="인증 메시지의 설명을 입력하세요">아래 버튼을 클릭하여 서버 인증을 완료해주세요.</textarea>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="authButtonText">버튼 텍스트</label>
+                        <input type="text" id="authButtonText" class="form-control" placeholder="버튼에 표시될 텍스트를 입력하세요" value="인증하기">
+                    </div>
+                    
+                    <div class="auth-preview">
+                        <div class="auth-preview-title" id="previewTitle">서버 인증</div>
+                        <div class="auth-preview-description" id="previewDescription">아래 버튼을 클릭하여 서버 인증을 완료해주세요.</div>
+                        <div class="auth-preview-button" id="previewButton">인증하기</div>
+                        <div class="auth-preview-privacy">
+                            <p><i class="fas fa-info-circle"></i> 인증을 진행하면 개인정보 처리방침에 동의한 것으로 간주됩니다.</p>
                         </div>
                     </div>
+                    
+                    <div class="auth-description">
+                        <p><i class="fas fa-exclamation-circle"></i> 사용자가 인증 버튼을 클릭하면 디스코드 OAuth 인증 과정을 통해 설정된 역할이 부여됩니다.</p>
+                        <p><i class="fas fa-shield-alt"></i> 서버 설정에 따라 캡차 인증, VPN 차단 등의 보안 기능이 적용됩니다.</p>
+                    </div>
+                    
+                    <button type="button" id="sendAuthMessageBtn" class="send-auth-btn">
+                        <i class="fas fa-paper-plane"></i> 인증 메시지 전송
+                    </button>
                 </div>
             </div>
-
-            <div class="form-actions">
-                <button type="submit" class="save-btn">
-                    <i class="fas fa-save"></i> 설정 저장
-                </button>
-            </div>
-        </form>
+        </div>
 
         <footer>
             &copy; <%= new Date().getFullYear() %> RestoreBot - 모든 권리 보유
@@ -603,7 +1095,6 @@
     </div>
 
     <script>
-        // 테마 전환 기능
         const themeToggle = document.getElementById('themeToggle');
         const html = document.documentElement;
         
@@ -626,12 +1117,67 @@
             themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
         }
         
+        const sections = document.querySelectorAll('.section-container');
+        const hamburgerMenu = document.getElementById('hamburgerMenu');
+        const sideMenu = document.getElementById('sideMenu');
+        const closeSideMenu = document.getElementById('closeSideMenu');
+        const overlay = document.getElementById('overlay');
+        const sideMenuItems = document.querySelectorAll('.side-menu-item');
+        
+        hamburgerMenu.addEventListener('click', (event) => {
+            event.stopPropagation();
+            sideMenu.classList.add('active');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+        
+        function closeSideMenuHandler() {
+            sideMenu.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        closeSideMenu.addEventListener('click', closeSideMenuHandler);
+        overlay.addEventListener('click', closeSideMenuHandler);
+        
+        sideMenuItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const action = item.getAttribute('data-action');
+                
+                sideMenuItems.forEach(menuItem => menuItem.classList.remove('active'));
+                item.classList.add('active');
+                
+                switch (action) {
+                    case 'settings':
+                        sections.forEach(section => section.classList.remove('active'));
+                        document.getElementById('settingsSection').classList.add('active');
+                        closeSideMenuHandler();
+                        break;
+                    case 'auth':
+                        sections.forEach(section => section.classList.remove('active'));
+                        document.getElementById('authSection').classList.add('active');
+                        closeSideMenuHandler();
+                        break;
+                    case 'logs':
+                        window.location.href = '/setting/logs';
+                        break;
+                    case 'backup':
+                        alert('서버 복구 기능은 준비 중입니다.');
+                        closeSideMenuHandler();
+                        break;
+                    case 'help':
+                        window.open('https://github.com/no1jj/restore-bot', '_blank');
+                        closeSideMenuHandler();
+                        break;
+                }
+            });
+        });
+        
         window.onload = function() {
             const roleSelect = document.getElementById('roleId');
             const selectedRole = document.getElementById('selectedRole');
             const roleColor = document.getElementById('roleColor');
             const roleName = document.getElementById('roleName');
-            
             
             function updateRolePreview() {
                 const selectedOption = roleSelect.options[roleSelect.selectedIndex];
@@ -653,7 +1199,6 @@
             const channelName = document.getElementById('channelName');
             const channelCategory = document.getElementById('channelCategory');
             
-            
             function updateChannelPreview() {
                 const selectedOption = channelSelect.options[channelSelect.selectedIndex];
                 
@@ -667,8 +1212,114 @@
             }
             
             channelSelect.addEventListener('change', updateChannelPreview);
-            
             updateChannelPreview();
+            
+            const authTitle = document.getElementById('authTitle');
+            const authDescription = document.getElementById('authDescription');
+            const authButtonText = document.getElementById('authButtonText');
+            const previewTitle = document.getElementById('previewTitle');
+            const previewDescription = document.getElementById('previewDescription');
+            const previewButton = document.getElementById('previewButton');
+            
+            function updateAuthPreview() {
+                previewTitle.textContent = authTitle.value || '서버 인증';
+                previewDescription.textContent = authDescription.value || '아래 버튼을 클릭하여 서버 인증을 완료해주세요.';
+                previewButton.textContent = authButtonText.value || '인증하기';
+            }
+            
+            authTitle.addEventListener('input', updateAuthPreview);
+            authDescription.addEventListener('input', updateAuthPreview);
+            authButtonText.addEventListener('input', updateAuthPreview);
+            
+            const sendAuthMessageBtn = document.getElementById('sendAuthMessageBtn');
+            const authChannelId = document.getElementById('authChannelId');
+            
+            sendAuthMessageBtn.addEventListener('click', async function() {
+                const channelId = authChannelId.value;
+                if (channelId === '0') {
+                    alert('메시지를 전송할 채널을 선택해주세요.');
+                    return;
+                }
+                
+                sendAuthMessageBtn.disabled = true;
+                sendAuthMessageBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 전송 중...';
+                
+                const data = {
+                    channelId: channelId,
+                    title: authTitle.value || '서버 인증',
+                    description: authDescription.value || '아래 버튼을 클릭하여 서버 인증을 완료해주세요.',
+                    buttonText: authButtonText.value || '인증하기',
+                    _csrf: document.querySelector('input[name="_csrf"]').value
+                };
+                
+                try {
+                    const response = await fetch('/setting/send-auth-message', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    sendAuthMessageBtn.disabled = false;
+                    sendAuthMessageBtn.innerHTML = '<i class="fas fa-paper-plane"></i> 인증 메시지 전송';
+                    
+                    if (result.success) {
+                        const successMessage = document.createElement('div');
+                        successMessage.className = 'message success-message';
+                        successMessage.style.marginTop = '15px';
+                        
+                        const roleInfo = roleSelect.options.namedItem(result.roleId) ? 
+                            roleSelect.options.namedItem(result.roleId).textContent : '설정된 역할';
+                        
+                        successMessage.innerHTML = `
+                            <i class="fas fa-check-circle"></i> 
+                            인증 메시지가 성공적으로 전송되었습니다.<br>
+                            인증 시 부여될 역할: <strong>${roleInfo}</strong>
+                        `;
+                        
+                        const prevMessage = document.querySelector('.auth-form .message');
+                        if (prevMessage) {
+                            prevMessage.remove();
+                        }
+                        
+                        document.querySelector('.auth-form').appendChild(successMessage);
+                        
+                        setTimeout(() => {
+                            successMessage.style.opacity = '0';
+                            setTimeout(() => {
+                                successMessage.remove();
+                            }, 500);
+                        }, 5000);
+                    } else {
+                        const errorMessage = document.createElement('div');
+                        errorMessage.className = 'message error-message';
+                        errorMessage.style.marginTop = '15px';
+                        errorMessage.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${result.message}`;
+                        
+                        const prevMessage = document.querySelector('.auth-form .message');
+                        if (prevMessage) {
+                            prevMessage.remove();
+                        }
+                        
+                        document.querySelector('.auth-form').appendChild(errorMessage);
+                        
+                        setTimeout(() => {
+                            errorMessage.style.opacity = '0';
+                            setTimeout(() => {
+                                errorMessage.remove();
+                            }, 500);
+                        }, 5000);
+                    }
+                } catch (error) {
+                    sendAuthMessageBtn.disabled = false;
+                    sendAuthMessageBtn.innerHTML = '<i class="fas fa-paper-plane"></i> 인증 메시지 전송';
+                    
+                    alert('오류가 발생했습니다: ' + error.message);
+                }
+            });
         };
         
         setTimeout(() => {
@@ -681,4 +1332,4 @@
 </body>
 </html> 
 
-<!-- V1.1.1 -->
+<!-- V1.2 -->

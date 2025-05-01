@@ -24,14 +24,14 @@ jobs:
           echo "actor=${{ github.actor }}" >> $GITHUB_OUTPUT
           echo "sha=${{ github.sha }}" >> $GITHUB_OUTPUT
 
-      - name: Get commit info
+      - name: Get commit info (push only)
         id: commit
         if: ${{ github.event_name == 'push' }}
         run: |
           echo "msg=$(git log -1 --pretty=format:'%s')" >> $GITHUB_OUTPUT
           echo "url=https://github.com/${{ github.repository }}/commit/${{ github.sha }}" >> $GITHUB_OUTPUT
 
-      - name: Send Discord Message
+      - name: Send Discord Notification
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: |
@@ -39,52 +39,48 @@ jobs:
           ACTOR="${{ steps.context.outputs.actor }}"
           REPO="${{ steps.context.outputs.repo }}"
           REF="${{ steps.context.outputs.ref }}"
-
-          COLOR=5814783
-          TITLE=""
-          DESC=""
           TIMESTAMP=$(date --utc +%Y-%m-%dT%H:%M:%SZ)
+
+          generate_payload() {
+            jq -n --arg title "$1" --arg desc "$2" --arg timestamp "$TIMESTAMP" --argjson color "$3" '{
+              embeds: [{
+                title: $title,
+                description: $desc,
+                color: $color,
+                timestamp: $timestamp
+              }]
+            }' > payload.json
+          }
 
           if [ "$EVENT" == "push" ]; then
             MSG="${{ steps.commit.outputs.msg }}"
             URL="${{ steps.commit.outputs.url }}"
+
             if [[ "$REF" == refs/tags/* ]]; then
               TAG="${REF#refs/tags/}"
-              TITLE="🚀 배포 태그 푸시됨: $TAG"
-              DESC="**$ACTOR**가 `$TAG` 태그를 푸시했습니다.\n[🔗 태그 보기](https://github.com/$REPO/releases/tag/$TAG)"
-              COLOR=16753920
+              generate_payload "🚀 배포 태그 푸시됨: $TAG" "**$ACTOR**가 \`$TAG\` 태그를 푸시했습니다.\n[🔗 태그 보기](https://github.com/$REPO/releases/tag/$TAG)" 16753920
             else
-              TITLE="📦 Push 이벤트 발생"
-              DESC="**$ACTOR**가 **$REPO**에 커밋:\n[$MSG]($URL)"
-              COLOR=5814783
+              generate_payload "📦 Push 이벤트 발생" "**$ACTOR**가 **$REPO**에 커밋:\n[$MSG]($URL)" 5814783
             fi
+
           elif [ "$EVENT" == "pull_request" ]; then
+            ACTION="${{ github.event.action }}"
             PR_TITLE="${{ github.event.pull_request.title }}"
             PR_URL="${{ github.event.pull_request.html_url }}"
-            if [ "${{ github.event.action }}" == "opened" ]; then
-              TITLE="📝 새 Pull Request"
-              DESC="**$ACTOR**가 PR 생성: [$PR_TITLE]($PR_URL)"
-              COLOR=3447003
-            elif [ "${{ github.event.action }}" == "closed" ] && [ "${{ github.event.pull_request.merged }}" == "true" ]; then
-              TITLE="✅ Pull Request 머지됨"
-              DESC="**$ACTOR**가 PR을 머지함: [$PR_TITLE]($PR_URL)"
-              COLOR=5763719
+            MERGED="${{ github.event.pull_request.merged }}"
+
+            if [ "$ACTION" == "opened" ]; then
+              generate_payload "📝 새 Pull Request" "**$ACTOR**가 PR 생성: [$PR_TITLE]($PR_URL)" 3447003
+            elif [ "$ACTION" == "closed" ] && [ "$MERGED" == "true" ]; then
+              generate_payload "✅ Pull Request 머지됨" "**$ACTOR**가 PR을 머지함: [$PR_TITLE]($PR_URL)" 5763719
             else
+              echo "PR closed but not merged. No message sent."
               exit 0
             fi
+
           else
+            echo "지원하지 않는 이벤트: $EVENT"
             exit 0
           fi
 
-          jq -n --arg title "$TITLE" --arg desc "$DESC" --arg timestamp "$TIMESTAMP" --argjson color "$COLOR" '{
-            embeds: [{
-              title: $title,
-              description: $desc,
-              color: $color,
-              timestamp: $timestamp
-            }]
-          }' > payload.json
-
-          curl -X POST -H "Content-Type: application/json" \
-            -d @payload.json \
-            $DISCORD_WEBHOOK
+          curl -X POST -H "Content-Type: application/json" -d @payload.json "$DISCORD_WEBHOOK"
