@@ -71,9 +71,10 @@ npm install  # 웹 서버 종속성 설치
 config.json 파일을 적절히 수정하세요
 ```
 
-4. 시행일 수정
+4. 파일 수정
 ```
 bot/no1jj/discordUI.py 248줄, web/view/privacy_policy.ejs 244줄에 시행일 수정 ex: 2025년 5월 1일
+web/routes.index.js 수정
 ```
 
 5. 봇 실행

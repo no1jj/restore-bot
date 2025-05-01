@@ -14,6 +14,10 @@ router.get('/privacypolicy', (req, res) => {
     res.render('privacy_policy');
 });
 
+router.get('/invite', (req, res) => {
+    res.redirect('https://discord.com/oauth2/authorize?client_id=1355209496863178760&permissions=8&integration_type=0&scope=bot');
+});
+
 module.exports = router; 
 
 // V1.1.1
