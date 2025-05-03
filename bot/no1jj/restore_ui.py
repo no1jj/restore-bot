@@ -11,14 +11,20 @@ import aiohttp
 import traceback
 import io
 
-def _IsCategory(channel_data):
-    channel_type = channel_data.get("type")
+def _IsCategory(channelData):
+    if not channelData or not isinstance(channelData, dict):
+        return False
     
-    if isinstance(channel_type, int):
-        return channel_type == 4
+    channelType = channelData.get("type")
     
-    if isinstance(channel_type, str):
-        return channel_type == "4" or channel_type == "category"
+    if channelType is None:
+        return False
+    
+    if isinstance(channelType, int):
+        return channelType == 4
+    
+    if isinstance(channelType, str):
+        return channelType == "4" or channelType == "category"
     
     return False
 
@@ -48,33 +54,65 @@ async def ShowBackupList(interaction: Interaction, targetServerId: str, restoreK
             await helper.ErrorEmbed(interaction, "백업 폴더를 찾을 수 없습니다.")
             return
         
+        try:
+            folderList = os.listdir(backupsFolder)
+        except Exception as e:
+            await helper.ErrorEmbed(interaction, f"백업 폴더를 읽을 수 없습니다: {str(e)}")
+            return
+        
         backupFolders = []
-        for folder in os.listdir(backupsFolder):
+        for folder in folderList:
             if folder.startswith(f"{targetServerId}_"):
                 folderPath = os.path.join(backupsFolder, folder)
+                
+                if not os.path.isdir(folderPath):
+                    continue
+                
                 jsonPath = os.path.join(folderPath, "backup.json")
-                if os.path.exists(jsonPath):
-                    try:
-                        with open(jsonPath, 'r', encoding='utf-8') as f:
-                            backupInfo = json.load(f)
-                        
-                        timestamp = backupInfo.get("backup_info", {}).get("timestamp", "알 수 없음")
-                        serverName = backupInfo.get("server_info", {}).get("name", "알 수 없음")
-                        backupFolders.append({
-                            "path": folderPath,
-                            "jsonFile": jsonPath,
-                            "timestamp": timestamp,
-                            "folderName": folder,
-                            "serverName": serverName
-                        })
-                    except:
+                
+                if not os.path.exists(jsonPath):
+                    continue
+                
+                try:
+                    if os.path.getsize(jsonPath) == 0:
                         continue
+                    
+                    with open(jsonPath, 'r', encoding='utf-8') as f:
+                        fileContent = f.read().strip()
+                        if not fileContent:
+                            continue
+                        backupInfo = json.loads(fileContent)
+                    
+                    backupInfoSection = backupInfo.get("backup_info", {})
+                    serverInfoSection = backupInfo.get("server_info", {})
+                    
+                    if not backupInfoSection:
+                        continue
+                    
+                    timestamp = backupInfoSection.get("timestamp", "알 수 없음")
+                    serverName = serverInfoSection.get("name", "알 수 없음")
+                    
+                    backupFolders.append({
+                        "path": folderPath,
+                        "jsonFile": jsonPath,
+                        "timestamp": timestamp,
+                        "folderName": folder,
+                        "serverName": serverName
+                    })
+                except json.JSONDecodeError:
+                    continue
+                except Exception as e:
+                    print(f"백업 파일 처리 오류 ({folder}): {str(e)}")
+                    continue
         
         if not backupFolders:
             await helper.ErrorEmbed(interaction, "해당 서버의 백업 파일을 찾을 수 없습니다.")
             return
         
-        backupFolders.sort(key=lambda x: x["timestamp"], reverse=True)
+        try:
+            backupFolders.sort(key=lambda x: x["timestamp"], reverse=True)
+        except Exception as e:
+            print(f"백업 정렬 오류: {str(e)}")
         
         view = BackupSelectView(backupFolders, 0, restoreKey, targetServerId)
         embed = discord.Embed(
@@ -87,7 +125,10 @@ async def ShowBackupList(interaction: Interaction, targetServerId: str, restoreK
         await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
     
     except Exception as e:
-        await helper.ErrorEmbed(interaction, f"백업 목록을 불러오는 중 오류가 발생했습니다: {str(e)}")
+        errorMessage = f"백업 목록을 불러오는 중 오류가 발생했습니다: {str(e)}"
+        print(f"백업 목록 조회 오류: {str(e)}")
+        print(traceback.format_exc())
+        await helper.ErrorEmbed(interaction, errorMessage)
 
 class BackupSelectView(View):
     def __init__(self, backups, page=0, restoreKey=None, targetServerId=None, per_page=10):
@@ -99,29 +140,51 @@ class BackupSelectView(View):
         self.restoreKey = restoreKey
         self.targetServerId = targetServerId
         
-        start_idx = page * per_page
-        end_idx = min(start_idx + per_page, len(backups))
+        startIdx = page * per_page
+        endIdx = min(startIdx + per_page, len(backups))
         
         options = []
-        for i, backup in enumerate(backups[start_idx:end_idx]):
+        for i, backup in enumerate(backups[startIdx:endIdx]):
             timestamp = backup["timestamp"]
             serverName = backup["serverName"]
-            option_label = f"{timestamp}"
-            option_description = f"{serverName}"
+            optionLabel = f"{timestamp}"
+            optionDescription = f"{serverName}"
             options.append(SelectOption(
-                label=option_label[:25],
-                description=option_description[:50],
-                value=str(start_idx + i),
+                label=optionLabel[:25],
+                description=optionDescription[:50],
+                value=str(startIdx + i),
                 emoji="📦"
             ))
         
         self.add_item(BackupDropdown(options))
         
-        if self.total_pages > 1:
-            if page > 0:
-                self.add_item(PrevPageButton(self.page))
-            if page < self.total_pages - 1:
-                self.add_item(NextPageButton(self.page))
+        prev_button = discord.ui.Button(
+            label="◀", 
+            style=discord.ButtonStyle.primary, 
+            custom_id=f"prev_page_{page}",
+            disabled=(page <= 0) 
+        )
+        prev_button.callback = self.prev_page_callback
+        self.add_item(prev_button)
+        
+        next_button = discord.ui.Button(
+            label="▶", 
+            style=discord.ButtonStyle.primary, 
+            custom_id=f"next_page_{page}",
+            disabled=(page >= self.total_pages - 1) 
+        )
+        next_button.callback = self.next_page_callback
+        self.add_item(next_button)
+    
+    async def prev_page_callback(self, interaction: Interaction):
+        newPage = self.page - 1
+        newView = BackupSelectView(self.backups, newPage, self.restoreKey, self.targetServerId, self.per_page)
+        await interaction.response.edit_message(view=newView)
+    
+    async def next_page_callback(self, interaction: Interaction):
+        newPage = self.page + 1
+        newView = BackupSelectView(self.backups, newPage, self.restoreKey, self.targetServerId, self.per_page)
+        await interaction.response.edit_message(view=newView)
 
 class BackupDropdown(Select):
     def __init__(self, options):
@@ -129,8 +192,8 @@ class BackupDropdown(Select):
     
     async def callback(self, interaction: Interaction):
         view = self.view
-        selected_idx = int(self.values[0])
-        backup = view.backups[selected_idx]
+        selectedIdx = int(self.values[0])
+        backup = view.backups[selectedIdx]
         
         backupDir = backup["path"]
         backupFile = backup["jsonFile"]
@@ -155,28 +218,6 @@ class BackupDropdown(Select):
         )
         
         await interaction.response.edit_message(embed=structureRestoreView.embed, view=structureRestoreView)
-
-class PrevPageButton(Button):
-    def __init__(self, current_page):
-        super().__init__(style=discord.ButtonStyle.secondary, label="◀ 이전", custom_id=f"prev_page_{current_page}")
-        self.current_page = current_page
-    
-    async def callback(self, interaction: Interaction):
-        view = self.view
-        new_page = self.current_page - 1
-        new_view = BackupSelectView(view.backups, new_page, view.restoreKey, view.targetServerId, view.per_page)
-        await interaction.response.edit_message(view=new_view)
-
-class NextPageButton(Button):
-    def __init__(self, current_page):
-        super().__init__(style=discord.ButtonStyle.secondary, label="다음 ▶", custom_id=f"next_page_{current_page}")
-        self.current_page = current_page
-    
-    async def callback(self, interaction: Interaction):
-        view = self.view
-        new_page = self.current_page + 1
-        new_view = BackupSelectView(view.backups, new_page, view.restoreKey, view.targetServerId, view.per_page)
-        await interaction.response.edit_message(view=new_view)
 
 class RestoreKeyModal(discord.ui.Modal):
     def __init__(self, restoreType: str):
@@ -1250,4 +1291,4 @@ class RestoreResultEmbed:
             timestamp=datetime.now(pytz.timezone("Asia/Seoul"))
         )
 
-# V1.3.4
+# V1.4

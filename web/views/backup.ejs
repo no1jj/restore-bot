@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>서버 백업 관리</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(to bottom right, #1e1e2f, #2c2c3c);
+            --container-bg: rgba(35, 35, 50, 0.9);
+            --card-bg: rgba(45, 45, 65, 0.7);
+            --text-color: #e4e4e4;
+            --heading-color: #61dafb;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --switch-active: #4cd964;
+            --switch-inactive: #8e8e93;
+            --button-save: #4568dc;
+            --button-danger: #dc4545;
+            --success-color: #4cd964;
+            --error-color: #ff5757;
+            --text-color-rgb: 228, 228, 228;
+        }
+
+        html[data-theme="light"] {
+            --bg-gradient: linear-gradient(to bottom right, #f7f7f7, #e6f0ff);
+            --container-bg: rgba(255, 255, 255, 0.9);
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --text-color: #333333;
+            --heading-color: #3a7bd5;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --switch-active: #34c759;
+            --switch-inactive: #aeaeb2;
+            --button-save: #3a7bd5;
+            --button-danger: #ff3b30;
+            --success-color: #34c759;
+            --error-color: #ff3b30;
+            --text-color-rgb: 51, 51, 51;
+        }
+
+        body {
+            font-family: 'Roboto', 'Noto Sans KR', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 0;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-icon {
+            font-size: 40px;
+            margin-right: 15px;
+            color: var(--heading-color);
+        }
+
+        h1 {
+            color: var(--heading-color);
+            margin: 0;
+            font-size: 2.2rem;
+        }
+
+        .user-controls {
+            display: flex;
+            align-items: center;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-color);
+            margin-right: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(30deg);
+        }
+
+        .logout-btn {
+            background-color: var(--button-danger);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+
+        .logout-btn i {
+            margin-right: 6px;
+        }
+
+        .logout-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .server-info {
+            display: flex;
+            align-items: center;
+            margin-left: 20px;
+        }
+        
+        .server-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            margin-right: 15px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+        }
+        
+        .server-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .server-icon i {
+            font-size: 24px;
+            color: var(--heading-color);
+        }
+        
+        .server-details {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .server-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--heading-color);
+            margin: 0;
+        }
+        
+        .server-id {
+            font-size: 0.8rem;
+            color: rgba(var(--text-color-rgb), 0.7);
+            margin: 0;
+        }
+
+        .actions-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .backup-card {
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s ease;
+            margin-bottom: 30px;
+        }
+
+        .backup-card h2 {
+            color: var(--heading-color);
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .backup-card h2 i {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        .backup-list {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .backup-item {
+            background-color: rgba(35, 35, 50, 0.5);
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .backup-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .backup-info {
+            flex-grow: 1;
+        }
+
+        .backup-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+            color: var(--heading-color);
+        }
+
+        .backup-timestamp {
+            font-size: 0.9rem;
+            color: rgba(var(--text-color-rgb), 0.7);
+            margin-bottom: 5px;
+        }
+
+        .backup-creator {
+            font-size: 0.9rem;
+        }
+
+        .backup-stats {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        .stat-item {
+            background-color: rgba(45, 45, 65, 0.5);
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+        }
+
+        .stat-item i {
+            margin-right: 5px;
+            font-size: 0.9em;
+        }
+
+        .backup-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background-color: rgba(97, 218, 251, 0.1);
+        }
+
+        .action-btn.delete-btn:hover {
+            background-color: rgba(255, 87, 87, 0.1);
+            color: var(--error-color);
+        }
+
+        .create-backup-btn {
+            background-color: var(--button-save);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .create-backup-btn i {
+            margin-right: 8px;
+        }
+
+        .create-backup-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(69, 104, 220, 0.3);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: var(--heading-color);
+        }
+
+        .empty-state p {
+            color: rgba(var(--text-color-rgb), 0.7);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            animation: fadeOut 8s forwards;
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
+
+        .success-message {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .error-message {
+            background-color: var(--error-color);
+            color: white;
+        }
+
+        .message i {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        .backup-details-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--container-bg);
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--heading-color);
+            margin: 0;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-color);
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .detail-section {
+            margin-bottom: 20px;
+        }
+
+        .detail-section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--heading-color);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .detail-section-title i {
+            margin-right: 8px;
+        }
+
+        .detail-item {
+            display: flex;
+            margin-bottom: 8px;
+        }
+
+        .detail-label {
+            min-width: 120px;
+            color: rgba(var(--text-color-rgb), 0.7);
+        }
+
+        .detail-value {
+            flex-grow: 1;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .stat-box {
+            background-color: rgba(45, 45, 65, 0.5);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--heading-color);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: rgba(var(--text-color-rgb), 0.7);
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .modal-btn {
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-btn.cancel {
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+        }
+
+        .modal-btn.delete {
+            background-color: var(--button-danger);
+            border: none;
+            color: white;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--heading-color);
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        .confirm-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1500;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .confirm-content {
+            background-color: var(--container-bg);
+            border-radius: 10px;
+            padding: 25px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .confirm-icon {
+            font-size: 3rem;
+            color: var(--error-color);
+            margin-bottom: 15px;
+        }
+
+        .confirm-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .confirm-text {
+            margin-bottom: 20px;
+            color: rgba(var(--text-color-rgb), 0.9);
+        }
+
+        .confirm-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .confirm-btn {
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .confirm-btn.cancel {
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+        }
+
+        .confirm-btn.confirm {
+            background-color: var(--button-danger);
+            border: none;
+            color: white;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            color: rgba(var(--text-color-rgb), 0.7);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .server-info {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .server-icon {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+
+            header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .logo {
+                margin-bottom: 20px;
+                justify-content: center;
+            }
+
+            .user-controls {
+                justify-content: center;
+            }
+
+            .actions-bar {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .backup-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .backup-stats {
+                flex-wrap: wrap;
+                margin-top: 15px;
+            }
+
+            .backup-actions {
+                margin-top: 15px;
+                align-self: flex-end;
+            }
+        }
+
+        .back-to-dashboard {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 15px;
+        }
+
+        .back-to-dashboard i {
+            margin-right: 6px;
+        }
+
+        .back-to-dashboard:hover {
+            background-color: rgba(97, 218, 251, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">💾</div>
+                <div class="server-info">
+                    <div class="server-icon">
+                        <% if (serverInfo.iconURL) { %>
+                            <img src="<%= serverInfo.iconURL %>" alt="<%= serverInfo.name %>">
+                        <% } else { %>
+                            <i class="fab fa-discord"></i>
+                        <% } %>
+                    </div>
+                    <div class="server-details">
+                        <h2 class="server-name"><%= serverInfo.name %></h2>
+                        <p class="server-id">서버 ID: <%= serverInfo.id %></p>
+                    </div>
+                </div>
+            </div>
+            <div class="user-controls">
+                <button class="back-to-dashboard" onclick="window.location.href='/setting'">
+                    <i class="fas fa-arrow-left"></i> 대시보드로 돌아가기
+                </button>
+                <button class="theme-toggle" id="themeToggle">🌓</button>
+                <a href="/logout" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> 로그아웃
+                </a>
+            </div>
+        </header>
+
+        <% if (locals.success_messages && success_messages.length > 0) { %>
+        <div class="message success-message">
+            <i class="fas fa-check-circle"></i> <%= success_messages[0] %>
+        </div>
+        <% } %>
+        
+        <% if (locals.error_messages && error_messages.length > 0) { %>
+        <div class="message error-message">
+            <i class="fas fa-exclamation-circle"></i> <%= error_messages[0] %>
+        </div>
+        <% } %>
+
+        <div class="backup-card">
+            <div class="actions-bar">
+                <h2><i class="fas fa-database"></i> 서버 백업</h2>
+                <button class="create-backup-btn" id="createBackupBtn">
+                    <i class="fas fa-plus"></i> 백업 생성
+                </button>
+            </div>
+
+            <div id="backupListContainer">
+                <% if (backups && backups.length > 0) { %>
+                    <div class="backup-list">
+                        <% backups.forEach(backup => { %>
+                            <div class="backup-item" data-backup-path="<%= backup.path %>">
+                                <div class="backup-info">
+                                    <div class="backup-title"><%= backup.timestamp %></div>
+                                    <div class="backup-creator">생성자: <%= backup.creator %></div>
+                                    <div class="backup-stats">
+                                        <div class="stat-item"><i class="fas fa-layer-group"></i> 카테고리: <%= backup.stats.categories %></div>
+                                        <div class="stat-item"><i class="fas fa-hashtag"></i> 채널: <%= backup.stats.channels %></div>
+                                        <div class="stat-item"><i class="fas fa-tags"></i> 역할: <%= backup.stats.roles %></div>
+                                        <div class="stat-item"><i class="far fa-smile"></i> 이모지: <%= backup.stats.emojis %></div>
+                                    </div>
+                                </div>
+                                <div class="backup-actions">
+                                    <button class="action-btn view-details-btn" data-backup-path="<%= backup.path %>">
+                                        <i class="fas fa-info-circle"></i>
+                                    </button>
+                                    <button class="action-btn delete-btn" data-backup-path="<%= backup.path %>">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        <% }); %>
+                    </div>
+                <% } else { %>
+                    <div class="empty-state">
+                        <i class="fas fa-database"></i>
+                        <h3>아직 백업이 없습니다</h3>
+                        <p>위의 '백업 생성' 버튼을 클릭하여 첫 서버 백업을 만들어보세요. 백업은 서버의 설정, 채널, 역할 등을 저장합니다.</p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+
+        <div class="backup-details-modal" id="backupDetailsModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">백업 상세 정보</h3>
+                    <button class="close-modal" id="closeDetailsModal">&times;</button>
+                </div>
+                <div class="modal-body" id="backupDetailsContent">
+                </div>
+                <div class="modal-footer">
+                    <button class="modal-btn cancel" id="closeModalBtn">닫기</button>
+                    <button class="modal-btn delete" id="deleteBackupBtn">백업 삭제</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="confirm-modal" id="confirmDeleteModal">
+            <div class="confirm-content">
+                <div class="confirm-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h3 class="confirm-title">백업 삭제 확인</h3>
+                <p class="confirm-text">정말로 이 백업을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.</p>
+                <div class="confirm-buttons">
+                    <button class="confirm-btn cancel" id="cancelDeleteBtn">취소</button>
+                    <button class="confirm-btn confirm" id="confirmDeleteBtn">삭제</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="spinner"></div>
+            <div class="loading-text" id="loadingText">백업 생성 중...</div>
+        </div>
+
+        <footer>
+            &copy; <%= new Date().getFullYear() %> RestoreBot - 모든 권리 보유
+        </footer>
+    </div>
+
+    <script>
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            html.setAttribute('data-theme', savedTheme);
+            updateToggleIcon(savedTheme);
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateToggleIcon(newTheme);
+        });
+        
+        function updateToggleIcon(theme) {
+            themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+
+        const createBackupBtn = document.getElementById('createBackupBtn');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const loadingText = document.getElementById('loadingText');
+        const csrfToken = '<%= csrfToken %>';
+        
+        createBackupBtn.addEventListener('click', async () => {
+            if (confirm('새로운 서버 백업을 생성하시겠습니까?')) {
+                try {
+                    loadingText.textContent = '백업 생성 중...';
+                    loadingOverlay.style.display = 'flex';
+                    
+                    loadingText.textContent = '백업 생성 중... (최대 10분 소요될 수 있습니다)';
+
+                    let retryCount = 0;
+                    const maxRetries = 3;
+                    let success = false;
+
+                    while (retryCount < maxRetries && !success) {
+                        try {
+                            const controller = new AbortController();
+                            const timeoutId = setTimeout(() => controller.abort(), 600000); 
+                            
+                            const response = await fetch('/backup/create', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json',
+                                    'CSRF-Token': csrfToken
+                                },
+                                body: JSON.stringify({}),
+                                signal: controller.signal,
+                                keepalive: true,
+                                cache: 'no-store'
+                            });
+                            
+                            clearTimeout(timeoutId);
+                            
+                            const contentType = response.headers.get('Content-Type');
+                            let result = null;
+                            
+                            if (!response.ok) {
+                                if (contentType && contentType.includes('text/html')) {
+                                    throw new Error(`서버 오류 (상태 코드: ${response.status})`);
+                                } else {
+                                    throw new Error(`서버 오류 (상태 코드: ${response.status})`);
+                                }
+                            }
+                            
+                            if (!contentType || !contentType.includes('application/json')) {
+                                throw new Error('서버가 JSON이 아닌 응답을 반환했습니다');
+                            }
+                            
+                            const responseText = await response.text();
+                            if (!responseText || responseText.trim() === '') {
+                                throw new Error('서버가 빈 응답을 반환했습니다');
+                            }
+                            
+                            try {
+                                result = JSON.parse(responseText);
+                            } catch (jsonError) {
+                                console.error('JSON 파싱 오류:', jsonError, '응답 텍스트:', responseText.substring(0, 100));
+                                throw new Error('응답 데이터 파싱 중 오류가 발생했습니다');
+                            }
+                            
+                            if (result.success) {
+                                success = true;
+                                loadingOverlay.style.display = 'none';
+                                alert('백업이 성공적으로 생성되었습니다.');
+                                location.reload();
+                            } else if (result.message) {
+                                throw new Error(result.message);
+                            } else {
+                                throw new Error('알 수 없는 오류');
+                            }
+                        } catch (fetchError) {
+                            retryCount++;
+                            console.error(`백업 시도 ${retryCount}/${maxRetries} 실패:`, fetchError);
+                            
+                            if (retryCount < maxRetries) {
+                                const retryDelay = Math.pow(2, retryCount) * 1000;
+                                loadingText.textContent = `연결 실패, ${retryCount}번째 재시도 중... (${retryDelay/1000}초 후)`;
+                                await new Promise(resolve => setTimeout(resolve, retryDelay));
+                                loadingText.textContent = '백업 생성 중... (최대 10분 소요될 수 있습니다)';
+                            } else {
+                                throw fetchError;
+                            }
+                        }
+                    }
+                } catch (error) {
+                    loadingOverlay.style.display = 'none';
+                    
+                    let errorMessage = '오류 발생: ';
+                    
+                    if (error.name === 'AbortError') {
+                        errorMessage += '요청 시간이 초과되었습니다. 서버가 응답하지 않습니다.';
+                    } else if (error.message.includes('Failed to fetch')) {
+                        errorMessage += '서버에 연결할 수 없습니다. 네트워크 연결을 확인하세요.';
+                    } else if (error.message.includes('JSON') || error.message.includes('Unexpected token')) {
+                        errorMessage += '서버가 잘못된 응답을 반환했습니다.';
+                    } else {
+                        errorMessage += error.message;
+                    }
+                    
+                    console.error('백업 생성 오류:', error);
+                    alert(errorMessage);
+                }
+            }
+        });
+
+        const backupDetailsModal = document.getElementById('backupDetailsModal');
+        const backupDetailsContent = document.getElementById('backupDetailsContent');
+        const closeDetailsModal = document.getElementById('closeDetailsModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const deleteBackupBtn = document.getElementById('deleteBackupBtn');
+        
+        document.querySelectorAll('.view-details-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const backupPath = btn.getAttribute('data-backup-path');
+                
+                try {
+                    loadingText.textContent = '백업 정보 로딩 중...';
+                    loadingOverlay.style.display = 'flex';
+                    
+                    const response = await fetch(`/backup/details/${backupPath}`, {
+                        method: 'GET',
+                        headers: {
+                            'CSRF-Token': csrfToken
+                        }
+                    });
+                    
+                    const result = await response.json();
+                    
+                    loadingOverlay.style.display = 'none';
+                    
+                    if (result.success) {
+                        const details = result.details;
+                        
+                        backupDetailsContent.innerHTML = `
+                            <div class="detail-section">
+                                <div class="detail-section-title"><i class="fas fa-info-circle"></i> 기본 정보</div>
+                                <div class="detail-item">
+                                    <div class="detail-label">백업 시간</div>
+                                    <div class="detail-value">${details.backupInfo.timestamp}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">생성자</div>
+                                    <div class="detail-value">${details.backupInfo.creator}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">서버 이름</div>
+                                    <div class="detail-value">${details.serverInfo.name}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="detail-section">
+                                <div class="detail-section-title"><i class="fas fa-chart-bar"></i> 백업 통계</div>
+                                <div class="stats-grid">
+                                    <div class="stat-box">
+                                        <div class="stat-value">${details.stats.categories}</div>
+                                        <div class="stat-label">카테고리</div>
+                                    </div>
+                                    <div class="stat-box">
+                                        <div class="stat-value">${details.stats.channels}</div>
+                                        <div class="stat-label">채널</div>
+                                    </div>
+                                    <div class="stat-box">
+                                        <div class="stat-value">${details.stats.roles}</div>
+                                        <div class="stat-label">역할</div>
+                                    </div>
+                                    <div class="stat-box">
+                                        <div class="stat-value">${details.stats.emojis}</div>
+                                        <div class="stat-label">이모지</div>
+                                    </div>
+                                    <div class="stat-box">
+                                        <div class="stat-value">${details.stats.stickers}</div>
+                                        <div class="stat-label">스티커</div>
+                                    </div>
+                                    <div class="stat-box">
+                                        <div class="stat-value">${details.stats.bans}</div>
+                                        <div class="stat-label">차단 목록</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        deleteBackupBtn.setAttribute('data-backup-path', details.path);
+                        
+                        backupDetailsModal.style.display = 'flex';
+                    } else {
+                        alert('백업 정보를 불러올 수 없습니다: ' + result.message);
+                    }
+                } catch (error) {
+                    loadingOverlay.style.display = 'none';
+                    alert('오류 발생: ' + error.message);
+                }
+            });
+        });
+        
+        closeDetailsModal.addEventListener('click', () => {
+            backupDetailsModal.style.display = 'none';
+        });
+        
+        closeModalBtn.addEventListener('click', () => {
+            backupDetailsModal.style.display = 'none';
+        });
+        
+        const confirmDeleteModal = document.getElementById('confirmDeleteModal');
+        const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        
+        deleteBackupBtn.addEventListener('click', () => {
+            const backupPath = deleteBackupBtn.getAttribute('data-backup-path');
+            confirmDeleteBtn.setAttribute('data-backup-path', backupPath);
+            backupDetailsModal.style.display = 'none';
+            confirmDeleteModal.style.display = 'flex';
+        });
+        
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const backupPath = btn.getAttribute('data-backup-path');
+                confirmDeleteBtn.setAttribute('data-backup-path', backupPath);
+                confirmDeleteModal.style.display = 'flex';
+            });
+        });
+        
+        cancelDeleteBtn.addEventListener('click', () => {
+            confirmDeleteModal.style.display = 'none';
+        });
+        
+        confirmDeleteBtn.addEventListener('click', async () => {
+            const backupPath = confirmDeleteBtn.getAttribute('data-backup-path');
+            
+            try {
+                loadingText.textContent = '백업 삭제 중...';
+                loadingOverlay.style.display = 'flex';
+                confirmDeleteModal.style.display = 'none';
+                
+                const response = await fetch('/backup/delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'CSRF-Token': csrfToken
+                    },
+                    body: JSON.stringify({ backupPath })
+                });
+                
+                const result = await response.json();
+                
+                loadingOverlay.style.display = 'none';
+                
+                if (result.success) {
+                    alert('백업이 성공적으로 삭제되었습니다.');
+                    location.reload();
+                } else {
+                    alert('백업 삭제 실패: ' + result.message);
+                }
+            } catch (error) {
+                loadingOverlay.style.display = 'none';
+                alert('오류 발생: ' + error.message);
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                backupDetailsModal.style.display = 'none';
+                confirmDeleteModal.style.display = 'none';
+            }
+        });
+        
+        backupDetailsModal.addEventListener('click', (e) => {
+            if (e.target === backupDetailsModal) {
+                backupDetailsModal.style.display = 'none';
+            }
+        });
+        
+        confirmDeleteModal.addEventListener('click', (e) => {
+            if (e.target === confirmDeleteModal) {
+                confirmDeleteModal.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
+
+<!-- V1.4 --> 

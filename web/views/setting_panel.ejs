@@ -853,7 +853,7 @@
                             <i class="fas fa-history"></i> 로그 조회
                         </div>
                         <div class="side-menu-item" data-action="backup">
-                            <i class="fas fa-database"></i> 서버 복구
+                            <i class="fas fa-database"></i> 서버 백업/복구
                         </div>
                         <div class="side-menu-item" data-action="help">
                             <i class="fas fa-question-circle"></i> 도움말
@@ -1006,6 +1006,26 @@
                             </div>
                             <div class="info-text" style="margin-top: 10px; font-size: 0.85rem; opacity: 0.8;">
                                 <i class="fas fa-info-circle"></i> 채널을 선택하면 자동으로 웹훅이 생성됩니다.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2><i class="fas fa-key"></i> 복구 키</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="recovery-key">서버 복구 키 (백업 복원 시 필요)</label>
+                                <div class="input-group">
+                                    <input type="text" id="recovery-key" class="form-control" value="<%= serverInfo.serverId %>" readonly>
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-primary" id="copy-key-btn">
+                                            <i class="fas fa-copy"></i> 복사
+                                        </button>
+                                    </div>
+                                </div>
+                                <small class="form-text text-muted">이 복구 키는 서버를 복원할 때 필요합니다. 안전한 곳에 보관하세요.</small>
                             </div>
                         </div>
                     </div>
@@ -1162,8 +1182,7 @@
                         window.location.href = '/setting/logs';
                         break;
                     case 'backup':
-                        alert('서버 복구 기능은 준비 중입니다.');
-                        closeSideMenuHandler();
+                        window.location.href = '/backup';
                         break;
                     case 'help':
                         window.open('https://github.com/no1jj/restore-bot', '_blank');
@@ -1328,8 +1347,25 @@
                 msg.style.display = 'none';
             });
         }, 8000);
+
+        document.getElementById('copy-key-btn').addEventListener('click', function() {
+            const recoveryKeyInput = document.getElementById('recovery-key');
+            recoveryKeyInput.select();
+            document.execCommand('copy');
+            
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-check"></i> 복사됨';
+            this.classList.remove('btn-primary');
+            this.classList.add('btn-success');
+            
+            setTimeout(() => {
+                this.innerHTML = originalText;
+                this.classList.remove('btn-success');
+                this.classList.add('btn-primary');
+            }, 2000);
+        });
     </script>
 </body>
 </html> 
 
-<!-- V1.3.2 -->
+<!-- V1.4 -->

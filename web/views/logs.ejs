@@ -100,8 +100,31 @@
             transform: rotate(30deg);
         }
 
-        .back-btn {
-            background-color: var(--heading-color);
+        .back-to-dashboard {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 15px;
+            text-decoration: none;
+        }
+
+        .back-to-dashboard i {
+            margin-right: 6px;
+        }
+
+        .back-to-dashboard:hover {
+            background-color: rgba(97, 218, 251, 0.1);
+        }
+
+        .logout-btn {
+            background-color: var(--error-color);
             color: white;
             border: none;
             padding: 8px 15px;
@@ -115,11 +138,11 @@
             text-decoration: none;
         }
 
-        .back-btn i {
+        .logout-btn i {
             margin-right: 6px;
         }
 
-        .back-btn:hover {
+        .logout-btn:hover {
             opacity: 0.9;
             transform: translateY(-2px);
         }
@@ -317,9 +340,12 @@
                 <h1>인증 로그 조회</h1>
             </div>
             <div class="user-controls">
+                <button class="back-to-dashboard" onclick="window.location.href='/setting'">
+                    <i class="fas fa-arrow-left"></i> 대시보드로 돌아가기
+                </button>
                 <button class="theme-toggle" id="themeToggle">🌓</button>
-                <a href="/setting" class="back-btn">
-                    <i class="fas fa-arrow-left"></i> 설정으로 돌아가기
+                <a href="/logout" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> 로그아웃
                 </a>
             </div>
         </header>
@@ -465,4 +491,4 @@
 </body>
 </html>
 
-<!-- V1.3.2 -->
+<!-- V1.4 -->

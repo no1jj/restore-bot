@@ -60,10 +60,12 @@ const indexRouter = require('./routes/index');
 const authRouter = require('./routes/auth');
 const settingRouter = require('./routes/setting');
 const loginRouter = require('./routes/login');
+const backupRouter = require('./routes/backup');
 
 app.use('/', indexRouter);
 app.use('/verify', authRouter);
 app.use('/setting', settingRouter);
+app.use('/backup', backupRouter);
 app.use('/', loginRouter);
 
 app.use((req, res) => {
@@ -93,4 +95,4 @@ app.listen(port, () => {
 
 module.exports = app; 
 
-// V1.3.2
+// V1.4

@@ -20,8 +20,7 @@ async def CreateServerBackup(guild: discord.Guild, backup_directory: str, backup
         "channels_data": [],
         "emojis_data": [],
         "stickers_data": [],
-        "banned_users": [],
-        "automod_rules": []
+        "banned_users": []
     }
     
     await _SaveServerAssets(guild, backup_directory)
@@ -40,8 +39,6 @@ async def CreateServerBackup(guild: discord.Guild, backup_directory: str, backup
     await _BackupEmojis(guild, backup_directory, backup_data)
     
     await _BackupStickers(guild, backup_directory, backup_data)
-    
-    _BackupAutomodRules(guild, backup_data)
     
     await _BackupChannels(guild, backup_data)
     
@@ -195,26 +192,6 @@ async def _BackupStickers(guild: discord.Guild, backup_directory: str, backup_da
         except Exception as e:
             print(f"스티커 백업 실패: {sticker.name} - {str(e)}")
 
-def _BackupAutomodRules(guild: discord.Guild, backup_data: Dict[str, Any]) -> None:
-    config = helper.LoadConfig()
-    headers = {"Authorization": f"Bot {config.botToken}"}
-    response = requests.get(f"https://discord.com/api/v9/guilds/{guild.id}/auto-moderation/rules", headers=headers)
-    
-    if response.status_code == 200:
-        rules = response.json()
-        for rule in rules:
-            automod_rule = {
-                "name": rule["name"],
-                "trigger_type": rule["trigger_type"],
-                "event_type": rule["event_type"],
-                "trigger_metadata": rule["trigger_metadata"],
-                "actions": rule["actions"],
-                "enabled": rule["enabled"],
-                "exempt_roles": rule["exempt_roles"],
-                "exempt_channels": []
-            }
-            backup_data["automod_rules"].append(automod_rule)
-
 async def _BackupChannels(guild: discord.Guild, backup_data: Dict[str, Any]) -> None:
     system_channels = [
         guild.rules_channel, 
@@ -338,7 +315,6 @@ def _SortBackupData(backup_data: Dict[str, Any]) -> None:
         print(f"백업 데이터 정렬 오류: {str(e)}")
 
 def _IsCategory(channel_data: Dict[str, Any]) -> bool:
-    """채널 데이터가 카테고리인지 확인하는 헬퍼 함수"""
     channel_type = channel_data.get("type")
     
     if isinstance(channel_type, int):
@@ -349,4 +325,4 @@ def _IsCategory(channel_data: Dict[str, Any]) -> bool:
     
     return False
 
-# V1.3.5
+# V1.4
