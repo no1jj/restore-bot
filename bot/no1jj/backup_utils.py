@@ -111,14 +111,17 @@ def _GetChannelData(channel: disnake.abc.GuildChannel) -> Dict[str, Any]:
 
 def _BackupRoles(guild: disnake.Guild, backup_data: Dict[str, Any]) -> None:
     for role in guild.roles:
-        backup_data["roles_data"].append({
+        role_data = {
+            "id": str(role.id),
             "name": role.name,
             "permissions": role.permissions.value,
             "colour": role.colour.value,
+            "color": role.color.value,  
             "hoist": role.hoist,
             "mentionable": role.mentionable,
             "position": role.position
-        })
+        }
+        backup_data["roles_data"].append(role_data)
 
 async def _BackupBannedUsers(guild: disnake.Guild, backup_data: Dict[str, Any]) -> None:
     ban_list = []
@@ -132,15 +135,26 @@ async def _BackupEmojis(guild: disnake.Guild, backup_directory: str, backup_data
     
     for emoji in guild.emojis:
         emoji_path = os.path.join(emojis_dir, f"{emoji.id}.png")
-        async with aiohttp.ClientSession() as session:
-            async with session.get(str(emoji.url)) as resp:
-                with open(emoji_path, "wb") as f:
-                    f.write(await resp.read())
-        
-        backup_data["emojis_data"].append({
-            "name": emoji.name,
-            "path": emoji_path
-        })
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(str(emoji.url)) as resp:
+                    if resp.status == 200:
+                        with open(emoji_path, "wb") as f:
+                            f.write(await resp.read())
+            
+            emoji_data = {
+                "id": str(emoji.id),
+                "name": emoji.name,
+                "path": emoji_path,
+                "url": str(emoji.url),
+                "animated": emoji.animated,
+                "managed": emoji.managed,
+                "available": emoji.available,
+                "roles": [str(role.id) for role in emoji.roles] if emoji.roles else []
+            }
+            backup_data["emojis_data"].append(emoji_data)
+        except Exception as e:
+            print(f"이모지 백업 실패: {emoji.name} - {str(e)}")
 
 async def _BackupStickers(guild: disnake.Guild, backup_directory: str, backup_data: Dict[str, Any]) -> None:
     stickers_dir = os.path.join(backup_directory, "stickers")
@@ -148,17 +162,38 @@ async def _BackupStickers(guild: disnake.Guild, backup_directory: str, backup_da
     
     for sticker in guild.stickers:
         sticker_path = os.path.join(stickers_dir, f"{sticker.id}.png")
-        async with aiohttp.ClientSession() as session:
-            async with session.get(str(sticker.url)) as resp:
-                with open(sticker_path, "wb") as f:
-                    f.write(await resp.read())
-        
-        backup_data["stickers_data"].append({
-            "name": sticker.name,
-            "description": sticker.description,
-            "emoji": sticker.emoji,
-            "path": sticker_path
-        })
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(str(sticker.url)) as resp:
+                    if resp.status == 200:
+                        with open(sticker_path, "wb") as f:
+                            f.write(await resp.read())
+            
+            format_type = None
+            try:
+                if hasattr(sticker.format_type, 'name'):
+                    format_type = sticker.format_type.name
+                elif hasattr(sticker.format_type, 'value'):
+                    format_type = sticker.format_type.value
+                else:
+                    format_type = str(sticker.format_type)
+            except Exception as e:
+                print(f"스티커 포맷 타입 추출 오류 ({sticker.name}): {str(e)}")
+                format_type = "PNG"  
+            
+            sticker_data = {
+                "id": str(sticker.id),
+                "name": sticker.name,
+                "description": sticker.description,
+                "emoji": sticker.emoji,
+                "path": sticker_path,
+                "url": str(sticker.url),
+                "format_type": format_type,
+                "available": getattr(sticker, 'available', True)
+            }
+            backup_data["stickers_data"].append(sticker_data)
+        except Exception as e:
+            print(f"스티커 백업 실패: {sticker.name} - {str(e)}")
 
 def _BackupAutomodRules(guild: disnake.Guild, backup_data: Dict[str, Any]) -> None:
     config = helper.LoadConfig()
@@ -191,40 +226,127 @@ async def _BackupChannels(guild: disnake.Guild, backup_data: Dict[str, Any]) -> 
         if channel in system_channels:
             continue
         
+        if isinstance(channel, disnake.CategoryChannel):
+            channel_overwrites = []
+            for target, permissions in channel.overwrites.items():
+                target_id = str(target.id)
+                target_type = "role" if isinstance(target, disnake.Role) else "member"
+                allow, deny = permissions.pair()
+                channel_overwrites.append({
+                    "id": target_id,
+                    "type": target_type,
+                    "name": target.name,
+                    "allow": allow.value,
+                    "deny": deny.value
+                })
+            
+            channel_data = {
+                "id": str(channel.id),
+                "name": channel.name,
+                "type": 4,  
+                "position": channel.position,
+                "permission_overwrites": channel_overwrites,
+                "channels": []  
+            }
+            
+            for child_channel in channel.channels:
+                channel_data["channels"].append(str(child_channel.id))
+            
+            backup_data["channels_data"].append(channel_data)
+    
+    for channel in guild.channels:
+        if channel in system_channels or isinstance(channel, disnake.CategoryChannel):
+            continue
+        
         channel_overwrites = []
         for target, permissions in channel.overwrites.items():
+            target_id = str(target.id)
+            target_type = "role" if isinstance(target, disnake.Role) else "member"
             allow, deny = permissions.pair()
             channel_overwrites.append({
+                "id": target_id,
+                "type": target_type,
                 "name": target.name,
                 "allow": allow.value,
                 "deny": deny.value
             })
         
+        channel_type = None
+        try:
+            if hasattr(channel.type, 'value'):
+                channel_type = channel.type.value
+            elif hasattr(channel.type, '__str__'):
+                type_str = str(channel.type)
+                if '.' in type_str:
+                    try:
+                        channel_type = int(type_str.split('.')[-1])
+                    except (ValueError, IndexError):
+                        channel_type = type_str
+                else:
+                    channel_type = type_str
+            else:
+                channel_type = str(channel.type)
+        except Exception as e:
+            print(f"채널 타입 추출 오류 ({channel.name}): {str(e)}")
+            channel_type = str(channel.type)
+        
         channel_data = {
+            "id": str(channel.id),
             "name": channel.name,
-            "type": str(channel.type),
+            "type": channel_type,
             "position": channel.position,
-            "overwrites": channel_overwrites
+            "permission_overwrites": channel_overwrites,
+            "parent_id": str(channel.category.id) if channel.category else None,
+            "category": channel.category.name if channel.category else None
         }
         
-        if isinstance(channel, disnake.CategoryChannel):
-            channel_data["channels"] = [c.name for c in channel.channels]
-        elif isinstance(channel, (disnake.TextChannel, disnake.VoiceChannel, disnake.ForumChannel)):
-            channel_data["category"] = channel.category.name if channel.category else None
-            
-            if isinstance(channel, disnake.TextChannel):
-                channel_data["nsfw"] = channel.is_nsfw()
-                channel_data["slowmode_delay"] = channel.slowmode_delay
+        if isinstance(channel, disnake.TextChannel):
+            channel_data.update({
+                "nsfw": channel.is_nsfw(),
+                "topic": channel.topic,
+                "slowmode_delay": channel.slowmode_delay,
+                "default_auto_archive_duration": channel.default_auto_archive_duration
+            })
+        elif isinstance(channel, disnake.VoiceChannel):
+            channel_data.update({
+                "bitrate": channel.bitrate,
+                "user_limit": channel.user_limit,
+                "rtc_region": channel.rtc_region
+            })
+        elif isinstance(channel, disnake.StageChannel):
+            channel_data.update({
+                "topic": channel.topic,
+                "user_limit": channel.user_limit,
+                "rtc_region": channel.rtc_region
+            })
         
         backup_data["channels_data"].append(channel_data)
 
 def _SortBackupData(backup_data: Dict[str, Any]) -> None:
-    sorted_channels = sorted(backup_data["channels_data"], key=lambda x: (x["type"], x.get("position", 0)))
-    backup_data["channels_data"] = sorted_channels
-    
-    category_channels = [channel for channel in sorted_channels if channel['type'] == "category"]
-    for category in category_channels:
-        if 'channels' in category:
-            category['channels'] = sorted(category['channels']) 
+    try:
+        sorted_channels = sorted(backup_data["channels_data"], key=lambda x: (
+            0 if _IsCategory(x) else 1,
+            x.get("position", 0)
+        ))
+        backup_data["channels_data"] = sorted_channels
+        
+        category_channels = [channel for channel in sorted_channels if _IsCategory(channel)]
+        for category in category_channels:
+            if 'channels' in category:
+                category['channels'] = sorted(category['channels'])
+    except Exception as e:
+        print(f"백업 데이터 정렬 오류: {str(e)}")
 
-# V1.3.3
+def _IsCategory(channel_data: Dict[str, Any]) -> bool:
+    """채널 데이터가 카테고리인지 확인하는 헬퍼 함수"""
+    channel_type = channel_data.get("type")
+    
+    if isinstance(channel_type, int):
+        return channel_type == 4
+    
+    if isinstance(channel_type, str):
+        return channel_type == "4" or channel_type == "category"
+    
+    return False
+
+# V1.3.4

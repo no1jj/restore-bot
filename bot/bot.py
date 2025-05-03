@@ -5,7 +5,6 @@ import pytz
 from datetime import datetime
 import sqlite3
 import os
-import aiohttp
 from no1jj.helper import config
 from no1jj import discordUI, helper, backup_utils
 
@@ -168,7 +167,8 @@ async def BackUp(interaction: Interaction):
         backupData = await backup_utils.CreateServerBackup(interaction.guild, backupDir, creatorInfo)
         
         roleCount = len(backupData["roles_data"])
-        channelCount = len(backupData["channels_data"])
+        categoryCount = len([c for c in backupData["channels_data"] if backup_utils._IsCategory(c)])
+        channelCount = len([c for c in backupData["channels_data"] if not backup_utils._IsCategory(c)])
         emojiCount = len(backupData["emojis_data"])
         stickerCount = len(backupData["stickers_data"])
         bannedCount = len(backupData["banned_users"]) if isinstance(backupData["banned_users"], list) else 0
@@ -186,8 +186,9 @@ async def BackUp(interaction: Interaction):
 
 ### 📑 **백업 내용**
 ```ini
-[역할] {roleCount}개
+[카테고리] {categoryCount}개
 [채널] {channelCount}개
+[역할] {roleCount}개
 [이모지] {emojiCount}개
 [스티커] {stickerCount}개
 [차단 목록] {bannedCount}명
@@ -213,23 +214,26 @@ async def BackUp(interaction: Interaction):
             ("서버 이름", f"`{interaction.guild.name}`"),
             ("서버 ID", f"`{interaction.guild.id}`"),
             ("백업 경로", f"`{backupDir}`"),
-            ("백업 크기", f"`{roleCount}개 역할, {channelCount}개 채널, {emojiCount}개 이모지, {stickerCount}개 스티커, {bannedCount}명 차단 목록`")
+            ("백업 내용", f"카테고리: `{categoryCount}개`\n채널: `{channelCount}개`\n역할: `{roleCount}개`\n이모지: `{emojiCount}개`\n스티커: `{stickerCount}개`\n차단 목록: `{bannedCount}명`")
         ]
         
         await helper.SendOwnerLogWebhook(
             "서버 백업 완료",
-            f"'{interaction.guild.name}' 서버의 백업이 완료되었습니다.",
+            f"### 🎉 **{interaction.guild.name}** 서버의 백업이 완료되었습니다.\n\n",
             0x57F287,
             fields,
             userInfo
         )
         
         await interaction.followup.send(embed=embed, ephemeral=True)
+        if interaction.user.dm_channel is None:
+            await interaction.user.create_dm()
+        await interaction.user.dm_channel.send(embed=embed)
         
     except Exception as e:
         await helper.ErrorEmbed(interaction, f"백업 중 오류가 발생했습니다: {str(e)}")
 
-@bot.tree.command(name="복구", description="인원 또는 서버 구조를 복구합니다.")
+@bot.tree.command(name="복구", description="인원 또는 서버를 복구합니다.")
 async def RestoreServer(interaction: Interaction):
     if not await helper.CheckPermission(interaction): 
         return
@@ -269,4 +273,4 @@ if __name__ == "__main__":
     helper.GenDB()
     bot.run(config.botToken)
 
-# V1.3.3
+# V1.3.4

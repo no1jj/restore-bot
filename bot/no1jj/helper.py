@@ -496,4 +496,11 @@ async def FetchBytesFromUrl(url: str) -> bytes:
         async with session.get(url) as res:
             return await res.read()
 
-# V1.3.2
+def RunDBQuery(query_func):
+    try:
+        return query_func()
+    except Exception as e:
+        print(f"DB 쿼리 실행 중 오류: {str(e)}")
+        raise e
+
+# V1.3.4
