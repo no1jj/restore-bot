@@ -186,4 +186,4 @@ exports.createSuccessEmbed = (title, description) => {
     });
 }; 
 
-// V1.2
+// V1.3

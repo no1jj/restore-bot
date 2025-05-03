@@ -48,4 +48,4 @@ router.get('/logs', csrfProtection, authMiddleware, settingController.getLogs);
 
 module.exports = router; 
 
-// V1.2
+// V1.3

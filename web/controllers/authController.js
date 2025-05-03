@@ -275,4 +275,4 @@ async function processAuth(guildId, code, hcaptchaResponse, req, res, tokenResul
     }
 }
 
-// V1.2
+// V1.3
