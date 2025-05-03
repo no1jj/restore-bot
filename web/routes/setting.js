@@ -46,6 +46,8 @@ router.post('/send-auth-message', csrfProtection, authMiddleware, express.json()
 
 router.get('/logs', csrfProtection, authMiddleware, settingController.getLogs);
 
+router.get('/stats', authMiddleware, settingController.getServerStats);
+
 module.exports = router; 
 
-// V1.3.2
+// V1.4.1

@@ -454,4 +454,44 @@ exports.getLogs = async (req, res) => {
     }
 };
 
-// V1.3.2
+/**
+ * 서버 통계 정보 조회
+ */
+exports.getServerStats = async (req, res) => {
+    let db = null;
+    
+    try {
+        const config = req.app.get('config');
+        const serverId = req.session.serverId;
+        
+        if (!serverId) {
+            return res.json({ success: false, message: '세션이 만료되었습니다.' });
+        }
+        
+        const serverDbPath = path.join(config.DBFolderPath, `${serverId}.db`);
+        db = getDb(serverDbPath);
+        
+        const authCount = await db.get("SELECT COUNT(*) as count FROM Users");
+        
+        await db.close();
+        
+        return res.json({
+            success: true,
+            authCount: authCount ? authCount.count : 0
+        });
+    } catch (error) {
+        console.error('서버 통계 정보 조회 오류:', error);
+        
+        if (db) {
+            try {
+                await db.close();
+            } catch (err) {
+                console.error('데이터베이스 연결 종료 오류:', err);
+            }
+        }
+        
+        return res.json({ success: false, message: '서버 정보를 불러오는 중 오류가 발생했습니다.' });
+    }
+};
+
+// V1.4.1

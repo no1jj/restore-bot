@@ -7,6 +7,8 @@ const execAsync = promisify(exec);
 const mkdir = promisify(fs.mkdir);
 const writeFile = promisify(fs.writeFile);
 const readFile = promisify(fs.readFile);
+const axios = require('axios');
+const webhookService = require('../services/webhookService');
 
 /**
  * 데이터베이스 연결 및 쿼리 Promise 래퍼
@@ -130,12 +132,50 @@ exports.createBackup = async (req, res) => {
         }
         
         const configPath = path.join(backupDir, 'config.json');
+        
+        let serverAdmin = {
+            id: req.session.userId || 'SYSTEM',
+            username: req.session.userId || 'SYSTEM'
+        };
+        
+        const serverDbPath = path.join(config.DBFolderPath, `${serverId}.db`);
+        let db = null;
+        try {
+            db = getDb(config.DBPath);
+            const adminInfo = await db.get("SELECT * FROM WebPanel WHERE id = ?", [req.session.userId]);
+            if (adminInfo) {
+                serverAdmin.id = adminInfo.id;
+                serverAdmin.username = adminInfo.id;
+            }
+            
+            await db.close();
+            db = null;
+            
+            if (fs.existsSync(serverDbPath)) {
+                db = getDb(serverDbPath);
+                const serverInfo = await db.get("SELECT * FROM Info");
+                if (serverInfo) {
+                }
+            }
+        } catch (dbError) {
+            console.error('관리자 정보 조회 실패:', dbError);
+        } finally {
+            if (db) {
+                try {
+                    await db.close();
+                } catch (err) {
+                    console.error('데이터베이스 연결 종료 오류:', err);
+                }
+            }
+        }
+        
         const backupConfig = {
             guild_id: serverId,
             backup_dir: backupDir,
             config_path: path.resolve(process.cwd(), 'config.json'),
-            creator: req.session.username || (req.session.user ? req.session.user.username : 'SYSTEM'),
-            creator_id: req.session.userId || (req.session.user ? req.session.user.id : 'SYSTEM')
+            creator: serverAdmin.username || req.session.username || 'SYSTEM',
+            creator_id: serverAdmin.id || req.session.userId || 'SYSTEM',
+            server_name: guild.name || 'Unknown Server'
         };
         
         try {
@@ -237,6 +277,35 @@ exports.createBackup = async (req, res) => {
             
             return res.status(500).json({ success: false, message: '백업 데이터가 유효하지 않습니다.' });
         }
+        
+        const roleCount = resultData.roles_data.length;
+        const categoryCount = resultData.channels_data.filter(c => isCategory(c)).length;
+        const channelCount = resultData.channels_data.filter(c => !isCategory(c)).length;
+        const emojiCount = resultData.emojis_data.length;
+        const stickerCount = resultData.stickers_data.length;
+        const bannedCount = Array.isArray(resultData.banned_users) ? resultData.banned_users.length : 0;
+        
+        const fields = [
+            ["서버 이름", `\`${guild.name}\``],
+            ["서버 ID", `\`${serverId}\``],
+            ["백업 경로", `\`${backupDir}\``],
+            ["백업 내용", `카테고리: \`${categoryCount}개\`\n채널: \`${channelCount}개\`\n역할: \`${roleCount}개\`\n이모지: \`${emojiCount}개\`\n스티커: \`${stickerCount}개\`\n차단 목록: \`${bannedCount}명\``]
+        ];
+        
+        const userInfo = [
+            ["백업 실행자", `<@${serverAdmin.id}>`],
+            ["실행자 ID", `\`${serverAdmin.id}\``],
+            ["실행자 이름", `\`${serverAdmin.username}\``]
+        ];
+        
+        await webhookService.sendOwnerLogWebhook(
+            config,
+            "서버 백업 완료",
+            `### 🎉 **${guild.name}** 서버의 웹 패널 백업이 완료되었습니다.\n\n`,
+            0x57F287,
+            fields,
+            userInfo
+        );
         
         return res.status(200).json({ 
             success: true, 
@@ -545,4 +614,4 @@ function isCategory(channel) {
     return false;
 }
 
-// V1.4
+// V1.4.1

@@ -192,7 +192,7 @@ async function main() {
         console.log(`서버 백업 시작: ${guild.name} (${guildId})`);
         
         const creatorInfo = config.creator || 'SYSTEM';
-        const backupData = await createServerBackup(guild, backupDir, creatorInfo);
+        const backupData = await createServerBackup(guild, backupDir, creatorInfo, config);
         
         if (!backupData || !backupData.server_info) {
             throw new Error('백업 데이터 생성 실패: 유효하지 않은 데이터');
@@ -251,9 +251,16 @@ async function main() {
     }
 }
 
-async function createServerBackup(guild, backupDir, creatorInfo) {
+async function createServerBackup(guild, backupDir, creatorInfo, config) {
     const now = new Date();
-    const timestamp = now.toISOString();
+    const timestamp = now.toLocaleString('ko-KR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+    }).replace(/\. /g, '-').replace(/\.$/g, '').replace(/:/g, ':');
     
     console.log(`백업 데이터 생성 중: ${guild ? guild.id : 'undefined'}`);
     
@@ -261,13 +268,19 @@ async function createServerBackup(guild, backupDir, creatorInfo) {
         throw new Error('유효하지 않은 서버 객체: undefined');
     }
     
+    const serverName = config.server_name || guild.name || 'Unknown Server';
+    const creatorId = config.creator_id || 'SYSTEM';
+    const creatorName = creatorInfo || 'SYSTEM';
+    const formattedCreator = creatorId !== 'SYSTEM' ? `${creatorName} (ID: ${creatorId})` : creatorName;
+    
     const backupData = {
         backup_info: {
             timestamp: timestamp,
-            creator: creatorInfo
+            creator: formattedCreator
         },
         server_info: {
-            name: guild.name || 'Unknown Server',
+            name: serverName,
+            id: guild.id,
             is_community: guild.features && Array.isArray(guild.features) ? guild.features.includes("COMMUNITY") : false
         },
         roles_data: [],
@@ -285,13 +298,23 @@ async function createServerBackup(guild, backupDir, creatorInfo) {
         
         await backupSystemChannels(guild, backupData);
         
-        if (guild.roles && guild.roles.cache && guild.roles.cache.size > 0) {
-            backupRoles(guild, backupData);
-            successCount++;
-            console.log(`역할 백업 성공: ${backupData.roles_data.length}개 역할`);
-        } else {
+        try {
+            console.log(`역할 백업 시작: 역할 목록 가져오기 시도`);
+            await guild.roles.fetch();
+            console.log(`역할 목록 가져오기 성공: 총 ${guild.roles.cache.size}개 역할 발견`);
+            
+            if (guild.roles.cache.size > 0) {
+                await backupRoles(guild, backupData);
+                successCount++;
+                console.log(`역할 백업 성공: ${backupData.roles_data.length}개 역할`);
+            } else {
+                skipCount++;
+                console.log("역할 백업 건너뜀: 백업할 역할이 없습니다.");
+            }
+        } catch (error) {
+            console.error(`역할 백업 중 오류 발생: ${error.message}`);
+            console.error(error.stack);
             skipCount++;
-            console.log("역할 백업 건너뜀: 백업할 역할이 없습니다.");
         }
         
         try {
@@ -443,10 +466,35 @@ function getChannelData(channel) {
                       channel.guild.members.cache.get(targetId);
         
         if (target) {
+            let allowValue = 0;
+            let denyValue = 0;
+            
+            if (permissions.allow) {
+                if (typeof permissions.allow.bitfield === 'bigint') {
+                    allowValue = Number(permissions.allow.bitfield);
+                    if (isNaN(allowValue) || !isFinite(allowValue)) {
+                        allowValue = permissions.allow.bitfield.toString();
+                    }
+                } else {
+                    allowValue = permissions.allow.bitfield;
+                }
+            }
+            
+            if (permissions.deny) {
+                if (typeof permissions.deny.bitfield === 'bigint') {
+                    denyValue = Number(permissions.deny.bitfield);
+                    if (isNaN(denyValue) || !isFinite(denyValue)) {
+                        denyValue = permissions.deny.bitfield.toString();
+                    }
+                } else {
+                    denyValue = permissions.deny.bitfield;
+                }
+            }
+            
             channelOverwrites.push({
                 name: target.name || target.displayName || "알 수 없음",
-                allow: permissions.allow.bitfield,
-                deny: permissions.deny.bitfield
+                allow: allowValue,
+                deny: denyValue
             });
         }
     });
@@ -488,7 +536,7 @@ async function backupSystemChannels(guild, backupData) {
         if (guild.systemChannel) {
             backupData.server_info.system_channel = {
                 name: guild.systemChannel.name,
-                type: guild.systemChannel.type,
+                type: "text",
                 position: guild.systemChannel.position,
                 nsfw: guild.systemChannel.nsfw || false,
                 category: guild.systemChannel.parent ? guild.systemChannel.parent.name : null
@@ -501,28 +549,98 @@ async function backupSystemChannels(guild, backupData) {
     }
 }
 
-function backupRoles(guild, backupData) {
-    if (!guild || !guild.roles || !guild.roles.cache || !backupData) {
+async function backupRoles(guild, backupData) {
+    if (!guild || !guild.roles) {
         console.warn('역할 백업 실패: 유효하지 않은 인자');
         return;
     }
     
+    console.log(`역할 백업 함수 시작`);
+    
     try {
-        guild.roles.cache.forEach(role => {
-            const roleData = {
-                id: role.id,
-                name: role.name,
-                permissions: role.permissions.bitfield,
-                colour: role.color,
-                color: role.color,
-                hoist: role.hoist,
-                mentionable: role.mentionable,
-                position: role.position
-            };
-            backupData.roles_data.push(roleData);
-        });
+        if (!guild.roles.cache || guild.roles.cache.size === 0) {
+            console.log('역할 캐시가 비어 있어 역할 목록을 다시 가져옵니다...');
+            await guild.roles.fetch();
+            console.log(`역할 다시 가져온 후 캐시된 역할 수: ${guild.roles.cache.size}`);
+        }
+        
+        if (!guild.roles.cache || guild.roles.cache.size === 0) {
+            console.warn('역할 백업 실패: 역할을 가져올 수 없습니다.');
+            return;
+        }
+        
+        console.log(`역할 백업 함수: 역할 캐시 크기 = ${guild.roles.cache.size}`);
+        
+        const roleEntries = Array.from(guild.roles.cache.entries());
+        console.log(`처리할 역할 수: ${roleEntries.length}`);
+        
+        for (const [roleId, role] of roleEntries) {
+            if (!role) {
+                console.warn(`ID ${roleId}의 역할이 유효하지 않음, 건너뜁니다.`);
+                continue;
+            }
+            
+            try {
+                console.log(`역할 처리 중: ${role.name} (${role.id})`);
+                
+                let permissionValue;
+                try {
+                    if (role.permissions && role.permissions.bitfield !== undefined) {
+                        if (typeof role.permissions.bitfield === 'bigint') {
+                            permissionValue = Number(role.permissions.bitfield);
+                            if (isNaN(permissionValue) || !isFinite(permissionValue)) {
+                                permissionValue = role.permissions.bitfield.toString();
+                            }
+                        } else {
+                            permissionValue = role.permissions.bitfield;
+                        }
+                        console.log(`역할 ${role.name}의 권한 값: ${permissionValue} (원본 타입: ${typeof role.permissions.bitfield})`);
+                    } else {
+                        console.warn(`역할 ${role.name}에 권한 정보가 없습니다.`);
+                        permissionValue = 0;
+                    }
+                } catch (err) {
+                    console.error(`역할 ${role.name}의 권한 변환 중 오류: ${err.message}`);
+                    permissionValue = 0;
+                }
+                
+                const roleData = {
+                    id: role.id,
+                    name: role.name,
+                    permissions: permissionValue,
+                    colour: role.color || 0,
+                    color: role.color || 0,
+                    hoist: role.hoist || false,
+                    mentionable: role.mentionable || false,
+                    position: role.position || 0
+                };
+                
+                backupData.roles_data.push(roleData);
+                console.log(`역할이 성공적으로 추가됨: ${role.name}`);
+            } catch (roleError) {
+                console.error(`개별 역할 처리 중 오류(${role?.name || '알 수 없음'}): ${roleError.message}`);
+            }
+        }
+        
+        console.log(`역할 백업 완료: ${backupData.roles_data.length}개 역할 처리됨`);
+        
+        if (backupData.roles_data.length === 0) {
+            console.warn('백업된 역할이 없습니다. 최소한 @everyone 역할은 추가합니다.');
+            backupData.roles_data.push({
+                id: guild.id,
+                name: '@everyone',
+                permissions: 0,
+                colour: 0,
+                color: 0,
+                hoist: false,
+                mentionable: false,
+                position: 0
+            });
+        }
     } catch (error) {
         console.error(`역할 백업 실패: ${error.message}`);
+        console.error(error.stack);
+        throw error;
     }
 }
 
@@ -715,12 +833,37 @@ async function backupChannels(guild, backupData) {
                                         guild.members.cache.get(targetId);
                             
                             if (target) {
+                                let allowValue = 0;
+                                let denyValue = 0;
+                                
+                                if (permissions.allow) {
+                                    if (typeof permissions.allow.bitfield === 'bigint') {
+                                        allowValue = Number(permissions.allow.bitfield);
+                                        if (isNaN(allowValue) || !isFinite(allowValue)) {
+                                            allowValue = permissions.allow.bitfield.toString();
+                                        }
+                                    } else {
+                                        allowValue = permissions.allow.bitfield;
+                                    }
+                                }
+                                
+                                if (permissions.deny) {
+                                    if (typeof permissions.deny.bitfield === 'bigint') {
+                                        denyValue = Number(permissions.deny.bitfield);
+                                        if (isNaN(denyValue) || !isFinite(denyValue)) {
+                                            denyValue = permissions.deny.bitfield.toString();
+                                        }
+                                    } else {
+                                        denyValue = permissions.deny.bitfield;
+                                    }
+                                }
+                                
                                 channelOverwrites.push({
                                     id: targetId,
                                     type: target.constructor.name === 'Role' ? 'role' : 'member',
                                     name: target.name || target.displayName || "알 수 없음",
-                                    allow: permissions.allow ? permissions.allow.bitfield : 0,
-                                    deny: permissions.deny ? permissions.deny.bitfield : 0
+                                    allow: allowValue,
+                                    deny: denyValue
                                 });
                             }
                         });
@@ -729,7 +872,7 @@ async function backupChannels(guild, backupData) {
                     const channelData = {
                         id: channel.id,
                         name: channel.name,
-                        type: 4, 
+                        type: 4,
                         position: channel.position,
                         permission_overwrites: channelOverwrites,
                         channels: channel.children && channel.children.cache ? 
@@ -762,12 +905,37 @@ async function backupChannels(guild, backupData) {
                                         guild.members.cache.get(targetId);
                             
                             if (target) {
+                                let allowValue = 0;
+                                let denyValue = 0;
+                                
+                                if (permissions.allow) {
+                                    if (typeof permissions.allow.bitfield === 'bigint') {
+                                        allowValue = Number(permissions.allow.bitfield);
+                                        if (isNaN(allowValue) || !isFinite(allowValue)) {
+                                            allowValue = permissions.allow.bitfield.toString();
+                                        }
+                                    } else {
+                                        allowValue = permissions.allow.bitfield;
+                                    }
+                                }
+                                
+                                if (permissions.deny) {
+                                    if (typeof permissions.deny.bitfield === 'bigint') {
+                                        denyValue = Number(permissions.deny.bitfield);
+                                        if (isNaN(denyValue) || !isFinite(denyValue)) {
+                                            denyValue = permissions.deny.bitfield.toString();
+                                        }
+                                    } else {
+                                        denyValue = permissions.deny.bitfield;
+                                    }
+                                }
+                                
                                 channelOverwrites.push({
                                     id: targetId,
                                     type: target.constructor.name === 'Role' ? 'role' : 'member',
                                     name: target.name || target.displayName || "알 수 없음",
-                                    allow: permissions.allow ? permissions.allow.bitfield : 0,
-                                    deny: permissions.deny ? permissions.deny.bitfield : 0
+                                    allow: allowValue,
+                                    deny: denyValue
                                 });
                             }
                         });
@@ -789,7 +957,7 @@ async function backupChannels(guild, backupData) {
                         channelData.nsfw = channel.nsfw || false;
                         channelData.topic = channel.topic || null;
                         channelData.slowmode_delay = channel.rateLimitPerUser || 0;
-                        channelData.default_auto_archive_duration = channel.defaultAutoArchiveDuration || 60;
+                        channelData.default_auto_archive_duration = 1440;
                     } 
                     else if (channel.type === 2) { 
                         channelData.bitrate = channel.bitrate || 64000;
@@ -884,4 +1052,4 @@ main().catch(err => {
     process.exit(1);
 }); 
 
-//V1.4
+// V1.4.1

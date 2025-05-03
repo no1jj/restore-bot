@@ -823,6 +823,114 @@
             color: #ffc107;
             font-size: 1.1rem;
         }
+
+        .toggle-key-btn {
+            border-radius: 0;
+            margin-right: 1px;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            border-color: var(--border-color);
+            transition: all 0.3s ease;
+        }
+        
+        .toggle-key-btn:hover {
+            background-color: rgba(97, 218, 251, 0.1);
+            color: var(--heading-color);
+            border-color: var(--heading-color);
+        }
+        
+        .copy-btn {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            background: linear-gradient(135deg, var(--button-save), var(--heading-color));
+            border: none;
+            padding: 8px 15px;
+            color: white;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .copy-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(97, 218, 251, 0.3);
+            background: linear-gradient(135deg, var(--heading-color), var(--button-save));
+        }
+        
+        .copy-btn.copied {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            box-shadow: 0 2px 5px rgba(40, 167, 69, 0.4);
+        }
+        
+        .input-group {
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        
+        #recovery-key {
+            border-right: none;
+            letter-spacing: 1px;
+            font-family: monospace;
+            font-weight: 600;
+            color: var(--heading-color);
+        }
+
+        .stats-container {
+            margin-top: 15px;
+        }
+        
+        .stat-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .stat-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .stat-label {
+            color: var(--text-color);
+            font-size: 0.95rem;
+            margin-bottom: 8px;
+            opacity: 0.8;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--heading-color);
+        }
+        
+        .setting-info {
+            margin-top: 5px;
+        }
+        
+        .setting-detail {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            padding: 5px 0;
+            border-bottom: 1px dashed var(--border-color);
+        }
+        
+        .setting-detail:last-child {
+            border-bottom: none;
+        }
+        
+        .setting-label {
+            font-weight: 500;
+            color: var(--text-color);
+            opacity: 0.8;
+        }
+        
+        .setting-value {
+            font-weight: 600;
+            color: var(--text-color);
+        }
     </style>
 </head>
 <body>
@@ -871,7 +979,7 @@
                     </div>
                     <div class="server-details">
                         <h2 class="server-name"><%= serverInfo.name %></h2>
-                        <p class="server-id">서버 ID: <%= serverInfo.serverId %></p>
+                        <p class="server-id">서버 ID: <%= serverInfo.id %></p>
                     </div>
                 </div>
             </div>
@@ -1018,14 +1126,28 @@
                             <div class="form-group">
                                 <label for="recovery-key">서버 복구 키 (백업 복원 시 필요)</label>
                                 <div class="input-group">
-                                    <input type="text" id="recovery-key" class="form-control" value="<%= serverInfo.serverId %>" readonly>
+                                    <input type="password" id="recovery-key" class="form-control" value="<%= serverInfo.key %>" readonly>
                                     <div class="input-group-append">
-                                        <button type="button" class="btn btn-primary" id="copy-key-btn">
+                                        <button type="button" class="btn btn-outline-secondary toggle-key-btn" id="toggle-key-btn">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-primary copy-btn" id="copy-key-btn">
                                             <i class="fas fa-copy"></i> 복사
                                         </button>
                                     </div>
                                 </div>
                                 <small class="form-text text-muted">이 복구 키는 서버를 복원할 때 필요합니다. 안전한 곳에 보관하세요.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h2><i class="fas fa-chart-bar"></i> 서버 통계</h2>
+                        
+                        <div class="stats-container">
+                            <div class="stat-item">
+                                <div class="stat-label">인증 완료 인원</div>
+                                <div class="stat-value" id="authCount">로딩 중...</div>
                             </div>
                         </div>
                     </div>
@@ -1192,7 +1314,7 @@
             });
         });
         
-        window.onload = function() {
+        document.addEventListener('DOMContentLoaded', function() {
             const roleSelect = document.getElementById('roleId');
             const selectedRole = document.getElementById('selectedRole');
             const roleColor = document.getElementById('roleColor');
@@ -1339,7 +1461,41 @@
                     alert('오류가 발생했습니다: ' + error.message);
                 }
             });
-        };
+            
+            async function loadServerStats() {
+                try {
+                    console.log('서버 통계 로드 중...');
+                    const response = await fetch('/setting/stats', {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Cache-Control': 'no-cache'
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`서버 응답 오류: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    console.log('서버 통계 응답:', data);
+                    
+                    if (data.success) {
+                        document.getElementById('authCount').textContent = data.authCount || '0';
+                    } else {
+                        document.getElementById('authCount').textContent = '로드 실패';
+                        console.error('서버 통계 로드 실패:', data.message);
+                    }
+                } catch (error) {
+                    document.getElementById('authCount').textContent = '오류 발생';
+                    console.error('서버 통계 로드 중 오류:', error);
+                }
+            }
+            
+            loadServerStats();
+            
+            setInterval(loadServerStats, 30000);
+        });
         
         setTimeout(() => {
             const messages = document.querySelectorAll('.message');
@@ -1348,24 +1504,44 @@
             });
         }, 8000);
 
+        document.getElementById('toggle-key-btn').addEventListener('click', function() {
+            const recoveryKeyInput = document.getElementById('recovery-key');
+            const icon = this.querySelector('i');
+            
+            if (recoveryKeyInput.type === 'password') {
+                recoveryKeyInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                recoveryKeyInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+
         document.getElementById('copy-key-btn').addEventListener('click', function() {
             const recoveryKeyInput = document.getElementById('recovery-key');
+            const originalType = recoveryKeyInput.type;
+            
+            recoveryKeyInput.type = 'text';
             recoveryKeyInput.select();
             document.execCommand('copy');
             
+            recoveryKeyInput.type = originalType;
+            
+            window.getSelection().removeAllRanges();
+            
             const originalText = this.innerHTML;
             this.innerHTML = '<i class="fas fa-check"></i> 복사됨';
-            this.classList.remove('btn-primary');
-            this.classList.add('btn-success');
+            this.classList.add('copied');
             
             setTimeout(() => {
                 this.innerHTML = originalText;
-                this.classList.remove('btn-success');
-                this.classList.add('btn-primary');
+                this.classList.remove('copied');
             }, 2000);
         });
     </script>
 </body>
 </html> 
 
-<!-- V1.4 -->
+<!-- V1.4.1 -->

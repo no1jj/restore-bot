@@ -2,6 +2,80 @@ const { WebhookClient } = require('discord.js');
 const dbService = require('./dbService');
 const ipService = require('./ipService');
 const path = require('path');
+const axios = require('axios');
+
+/**
+ * 오너 로그를 Discord 웹훅으로 전송하는 함수 (백업 및 시스템 로그용)
+ * @param {object} config - 설정 객체
+ * @param {string} title - 로그 제목
+ * @param {string} description - 로그 설명
+ * @param {number} color - 임베드 색상 (16진수)
+ * @param {Array} fields - 추가 필드 배열 (이름, 값 쌍)
+ * @param {Array} userInfo - 사용자 정보 필드 배열 (이름, 값 쌍)
+ * @returns {boolean} 전송 성공 여부
+ */
+exports.sendOwnerLogWebhook = async (config, title, description, color, fields = [], userInfo = []) => {
+    try {
+        if (!config.ownerLogWebhook) {
+            console.log('오너 로그 웹훅 URL이 설정되지 않았습니다.');
+            return false;
+        }
+
+        const now = new Date();
+        const timestamp = now.toISOString();
+        
+        const iconMap = {
+            '0xFF0000': '🔴', 
+            '0x57F287': '🟢',
+            '0x3498DB': '🔵',  
+            'default': '⚪'
+        };
+        
+        const colorKey = `0x${color.toString(16).toUpperCase()}`;
+        const icon = iconMap[colorKey] || iconMap['default'];
+        
+        const embed = {
+            title: `${icon} ${title}`,
+            description: description,
+            color: color,
+            timestamp: timestamp,
+            fields: []
+        };
+        
+        for (const [name, value] of fields) {
+            embed.fields.push({
+                name: `**${name}**`,
+                value: value,
+                inline: false
+            });
+        }
+        
+        if (userInfo && userInfo.length > 0) {
+            embed.fields.push({
+                name: '**📊 관리자 정보**',
+                value: '',
+                inline: false
+            });
+            
+            for (const [name, value] of userInfo) {
+                embed.fields.push({
+                    name: name,
+                    value: value,
+                    inline: true
+                });
+            }
+        }
+        
+        await axios.post(config.ownerLogWebhook, {
+            embeds: [embed]
+        });
+        
+        return true;
+    } catch (error) {
+        console.error('오너 로그 웹훅 전송 실패:', error.message);
+        return false;
+    }
+};
 
 /**
  * 웹훅 로그 전송
@@ -264,4 +338,4 @@ ${description ? `${description}\n` : ''}
     }
 }; 
 
-// V1.3.2
+// V1.4.1
