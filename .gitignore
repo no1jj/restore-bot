@@ -2,3 +2,4 @@
 config.json
 db.db
 /node_modules
+*.db
