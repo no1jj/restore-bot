@@ -820,4 +820,4 @@ class DirectInputModal(Modal):
         except Exception as e:
             await helper.ErrorEmbed(interaction, f"오류가 발생했습니다.\n\n{str(e)}") 
 
-# V1.3.1
+# V1.3.2

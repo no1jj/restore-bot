@@ -106,4 +106,4 @@ exports.checkIsVpn = async (ip, config) => {
     return await ipService.checkIsVpn(ip, config);
 };
 
-// V1.3.1
+// V1.3.2

@@ -627,4 +627,4 @@ exports.addAuthLog = (guildId, userId, content, userInfo = {}) => {
 
 exports.loadDB = loadDB; 
 
-// V1.3.1
+// V1.3.2

@@ -270,4 +270,4 @@ class PrivacyPolicyView(View):
         else:
             await interaction.response.defer() 
 
-# V1.3
+# V1.3.2

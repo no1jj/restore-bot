@@ -454,4 +454,4 @@ exports.getLogs = async (req, res) => {
     }
 };
 
-// V1.3.1
+// V1.3.2

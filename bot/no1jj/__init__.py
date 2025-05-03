@@ -6,6 +6,7 @@ from . import list_ui
 from . import restore_ui
 from . import webPanel_ui
 from . import common_ui
+from . import backup_utils
 
 __all__ = [
     "helper",
@@ -15,7 +16,8 @@ __all__ = [
     "list_ui",
     "restore_ui",
     "webPanel_ui",
-    "common_ui"
+    "common_ui",
+    "backup_utils"
 ]
 
-# V1.3
+# V1.3.2

@@ -496,4 +496,4 @@ async def FetchBytesFromUrl(url: str) -> bytes:
         async with session.get(url) as res:
             return await res.read()
 
-# V1.3.1
+# V1.3.2

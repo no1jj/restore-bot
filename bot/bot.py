@@ -7,7 +7,7 @@ import sqlite3
 import os
 import aiohttp
 from no1jj.helper import config
-from no1jj import discordUI, helper
+from no1jj import discordUI, helper, backup_utils
 
 class Bot(commands.Bot):
     async def on_ready(self):
@@ -148,19 +148,86 @@ async def BlackList(interaction: Interaction):
     except Exception as e:
         await helper.ErrorEmbed(interaction, f"오류가 발생했습니다: {str(e)}")
 
-# @bot.tree.command(name="백업",description="서버를 백업합니다.")
-# async def BackUp(interaction: Interaction):
-#     if not await helper.CheckPermission(interaction): 
-#         return
+@bot.tree.command(name="백업", description="서버를 백업합니다.")
+async def BackUp(interaction: Interaction):
+    if not await helper.CheckPermission(interaction): 
+        return
     
-#     if not await helper.CheckServerRegistration(interaction):
-#         return
+    if not await helper.CheckServerRegistration(interaction):
+        return
 
-    
-#     try:
-#         pass
-#     except Exception as e:
-#         await helper.ErrorEmbed(interaction, f"오류가 발생했습니다: {str(e)}")
+    try:
+        config = helper.LoadConfig()
+        timestamp = datetime.now(pytz.timezone("Asia/Seoul")).strftime('%Y%m%d%H%M%S')
+        backupDir = os.path.join(config.DBFolderPath, f"backups/{interaction.guild.id}_{timestamp}")
+        os.makedirs(backupDir, exist_ok=True)
+        
+        await interaction.response.defer(ephemeral=True)
+        
+        creatorInfo = f"{interaction.user.name} (ID: {interaction.user.id})"
+        backupData = await backup_utils.CreateServerBackup(interaction.guild, backupDir, creatorInfo)
+        
+        roleCount = len(backupData["roles_data"])
+        channelCount = len(backupData["channels_data"])
+        emojiCount = len(backupData["emojis_data"])
+        stickerCount = len(backupData["stickers_data"])
+        bannedCount = len(backupData["banned_users"]) if isinstance(backupData["banned_users"], list) else 0
+        
+        description = f"""
+## 📦 **백업 완료**
+
+### 📊 **백업 요약**
+```ini
+[서버 이름] {interaction.guild.name}
+[서버 ID] {interaction.guild.id}
+[백업 시간] {backupData["backup_info"]["timestamp"]}
+[백업 경로] {backupDir}
+```
+
+### 📑 **백업 내용**
+```ini
+[역할] {roleCount}개
+[채널] {channelCount}개
+[이모지] {emojiCount}개
+[스티커] {stickerCount}개
+[차단 목록] {bannedCount}명
+```
+
+백업 파일은 서버에 안전하게 저장되었습니다.
+"""
+        
+        embed = Embed(
+            title="✅ 백업 완료",
+            description=description,
+            color=Color.green(),
+            timestamp=datetime.now(pytz.timezone("Asia/Seoul"))
+        )
+        
+        userInfo = [
+            ("백업 실행자", f"<@{interaction.user.id}>"),
+            ("실행자 ID", f"`{interaction.user.id}`"),
+            ("실행자 이름", f"`{interaction.user.name}`")
+        ]
+        
+        fields = [
+            ("서버 이름", f"`{interaction.guild.name}`"),
+            ("서버 ID", f"`{interaction.guild.id}`"),
+            ("백업 경로", f"`{backupDir}`"),
+            ("백업 크기", f"`{roleCount}개 역할, {channelCount}개 채널, {emojiCount}개 이모지, {stickerCount}개 스티커, {bannedCount}명 차단 목록`")
+        ]
+        
+        await helper.SendOwnerLogWebhook(
+            "서버 백업 완료",
+            f"'{interaction.guild.name}' 서버의 백업이 완료되었습니다.",
+            0x57F287,
+            fields,
+            userInfo
+        )
+        
+        await interaction.followup.send(embed=embed, ephemeral=True)
+        
+    except Exception as e:
+        await helper.ErrorEmbed(interaction, f"백업 중 오류가 발생했습니다: {str(e)}")
 
 @bot.tree.command(name="복구", description="복구를 시작합니다.")
 async def RestoreServer(interaction: Interaction, restore_key: str):
@@ -387,8 +454,33 @@ async def RestoreServer(interaction: Interaction, restore_key: str):
         if apiSession:
             await apiSession.close()
 
+@bot.tree.command(name="인원", description="인증한 인원을 확인합니다.")
+async def CheckAuthUsers(interaction: Interaction):
+    if not await helper.CheckServerRegistration(interaction):
+        return
+    
+    if not await helper.CheckPermission(interaction):
+        return
+    
+    try:
+        serverId = str(interaction.guild.id)
+        dbPath = os.path.join(config.DBFolderPath, f"{serverId}.db")
+        conn = sqlite3.connect(dbPath)
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM Users")
+        userCount = cursor.fetchone()[0]
+        embed = discord.Embed(
+            title="📊 인원 정보",
+            description=f"이 서버에 인증된 총 인원 수: **{userCount}명**",
+            color=discord.Color.blue(),
+            timestamp=datetime.now(pytz.timezone("Asia/Seoul"))
+        )
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+    except Exception as e:
+        await helper.ErrorEmbed(interaction, f"사용자 정보를 불러오는 중 오류가 발생했습니다: {str(e)}")
+
 if __name__ == "__main__":
     helper.GenDB()
     bot.run(config.botToken)
 
-# V1.3.1
+# V1.3.2

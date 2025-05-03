@@ -281,4 +281,4 @@ class BackToSettingsButton(Button):
         view = SettingsView(self.serverId, interaction)
         await interaction.response.edit_message(view=view) 
 
-# V1.3.1
+# V1.3.2
