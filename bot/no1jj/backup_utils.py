@@ -2,12 +2,12 @@ import os
 import json
 import aiohttp
 import requests
-import disnake
+import discord
 from datetime import datetime
 from typing import Dict, List, Any, Optional
 from . import helper
 
-async def CreateServerBackup(guild: disnake.Guild, backup_directory: str, backup_creator: str) -> Dict[str, Any]:
+async def CreateServerBackup(guild: discord.Guild, backup_directory: str, backup_creator: str) -> Dict[str, Any]:
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M')
     
     backup_data = {
@@ -52,7 +52,7 @@ async def CreateServerBackup(guild: disnake.Guild, backup_directory: str, backup
     
     return backup_data
 
-async def _SaveServerAssets(guild: disnake.Guild, backup_directory: str) -> None:
+async def _SaveServerAssets(guild: discord.Guild, backup_directory: str) -> None:
     if guild.icon:
         icon_data = await guild.icon.read()
         with open(os.path.join(backup_directory, "icon.png"), "wb") as f:
@@ -63,7 +63,7 @@ async def _SaveServerAssets(guild: disnake.Guild, backup_directory: str) -> None
         with open(os.path.join(backup_directory, "banner.png"), "wb") as f:
             f.write(banner_data)
 
-async def _BackupSystemChannels(guild: disnake.Guild, backup_data: Dict[str, Any]) -> None:
+async def _BackupSystemChannels(guild: discord.Guild, backup_data: Dict[str, Any]) -> None:
     system_channels_count = 0
     
     if guild.rules_channel:
@@ -83,13 +83,13 @@ async def _BackupSystemChannels(guild: disnake.Guild, backup_data: Dict[str, Any
             "name": guild.system_channel.name,
             "type": str(guild.system_channel.type),
             "position": guild.system_channel.position,
-            "nsfw": guild.system_channel.is_nsfw() if isinstance(guild.system_channel, disnake.TextChannel) else None,
+            "nsfw": guild.system_channel.is_nsfw() if isinstance(guild.system_channel, discord.TextChannel) else None,
             "category": guild.system_channel.category.name if guild.system_channel.category else None
         }
     else:
         backup_data["server_info"]["system_channel"] = None
 
-def _GetChannelData(channel: disnake.abc.GuildChannel) -> Dict[str, Any]:
+def _GetChannelData(channel: discord.abc.GuildChannel) -> Dict[str, Any]:
     channel_overwrites = []
     for target, permissions in channel.overwrites.items():
         allow, deny = permissions.pair()
@@ -103,13 +103,13 @@ def _GetChannelData(channel: disnake.abc.GuildChannel) -> Dict[str, Any]:
         "name": channel.name,
         "type": str(channel.type),
         "position": channel.position,
-        "nsfw": channel.is_nsfw() if isinstance(channel, disnake.TextChannel) else None,
-        "slowmode_delay": channel.slowmode_delay if isinstance(channel, disnake.TextChannel) else None,
+        "nsfw": channel.is_nsfw() if isinstance(channel, discord.TextChannel) else None,
+        "slowmode_delay": channel.slowmode_delay if isinstance(channel, discord.TextChannel) else None,
         "category": channel.category.name if channel.category else None,
         "overwrites": channel_overwrites
     }
 
-def _BackupRoles(guild: disnake.Guild, backup_data: Dict[str, Any]) -> None:
+def _BackupRoles(guild: discord.Guild, backup_data: Dict[str, Any]) -> None:
     for role in guild.roles:
         role_data = {
             "id": str(role.id),
@@ -123,13 +123,13 @@ def _BackupRoles(guild: disnake.Guild, backup_data: Dict[str, Any]) -> None:
         }
         backup_data["roles_data"].append(role_data)
 
-async def _BackupBannedUsers(guild: disnake.Guild, backup_data: Dict[str, Any]) -> None:
+async def _BackupBannedUsers(guild: discord.Guild, backup_data: Dict[str, Any]) -> None:
     ban_list = []
     async for ban in guild.bans(limit=None):
         ban_list.append({'id': ban.user.id, "reason": ban.reason})
     backup_data['banned_users'] = ban_list
 
-async def _BackupEmojis(guild: disnake.Guild, backup_directory: str, backup_data: Dict[str, Any]) -> None:
+async def _BackupEmojis(guild: discord.Guild, backup_directory: str, backup_data: Dict[str, Any]) -> None:
     emojis_dir = os.path.join(backup_directory, "emojis")
     os.makedirs(emojis_dir, exist_ok=True)
     
@@ -156,7 +156,7 @@ async def _BackupEmojis(guild: disnake.Guild, backup_directory: str, backup_data
         except Exception as e:
             print(f"이모지 백업 실패: {emoji.name} - {str(e)}")
 
-async def _BackupStickers(guild: disnake.Guild, backup_directory: str, backup_data: Dict[str, Any]) -> None:
+async def _BackupStickers(guild: discord.Guild, backup_directory: str, backup_data: Dict[str, Any]) -> None:
     stickers_dir = os.path.join(backup_directory, "stickers")
     os.makedirs(stickers_dir, exist_ok=True)
     
@@ -171,12 +171,12 @@ async def _BackupStickers(guild: disnake.Guild, backup_directory: str, backup_da
             
             format_type = None
             try:
-                if hasattr(sticker.format_type, 'name'):
-                    format_type = sticker.format_type.name
-                elif hasattr(sticker.format_type, 'value'):
-                    format_type = sticker.format_type.value
+                if hasattr(sticker.format, 'name'):
+                    format_type = sticker.format.name
+                elif hasattr(sticker.format, 'value'):
+                    format_type = sticker.format.value
                 else:
-                    format_type = str(sticker.format_type)
+                    format_type = str(sticker.format)
             except Exception as e:
                 print(f"스티커 포맷 타입 추출 오류 ({sticker.name}): {str(e)}")
                 format_type = "PNG"  
@@ -195,7 +195,7 @@ async def _BackupStickers(guild: disnake.Guild, backup_directory: str, backup_da
         except Exception as e:
             print(f"스티커 백업 실패: {sticker.name} - {str(e)}")
 
-def _BackupAutomodRules(guild: disnake.Guild, backup_data: Dict[str, Any]) -> None:
+def _BackupAutomodRules(guild: discord.Guild, backup_data: Dict[str, Any]) -> None:
     config = helper.LoadConfig()
     headers = {"Authorization": f"Bot {config.botToken}"}
     response = requests.get(f"https://discord.com/api/v9/guilds/{guild.id}/auto-moderation/rules", headers=headers)
@@ -215,7 +215,7 @@ def _BackupAutomodRules(guild: disnake.Guild, backup_data: Dict[str, Any]) -> No
             }
             backup_data["automod_rules"].append(automod_rule)
 
-async def _BackupChannels(guild: disnake.Guild, backup_data: Dict[str, Any]) -> None:
+async def _BackupChannels(guild: discord.Guild, backup_data: Dict[str, Any]) -> None:
     system_channels = [
         guild.rules_channel, 
         guild.public_updates_channel, 
@@ -226,11 +226,11 @@ async def _BackupChannels(guild: disnake.Guild, backup_data: Dict[str, Any]) -> 
         if channel in system_channels:
             continue
         
-        if isinstance(channel, disnake.CategoryChannel):
+        if isinstance(channel, discord.CategoryChannel):
             channel_overwrites = []
             for target, permissions in channel.overwrites.items():
                 target_id = str(target.id)
-                target_type = "role" if isinstance(target, disnake.Role) else "member"
+                target_type = "role" if isinstance(target, discord.Role) else "member"
                 allow, deny = permissions.pair()
                 channel_overwrites.append({
                     "id": target_id,
@@ -243,7 +243,7 @@ async def _BackupChannels(guild: disnake.Guild, backup_data: Dict[str, Any]) -> 
             channel_data = {
                 "id": str(channel.id),
                 "name": channel.name,
-                "type": 4,  
+                "type": discord.ChannelType.category.value,  
                 "position": channel.position,
                 "permission_overwrites": channel_overwrites,
                 "channels": []  
@@ -255,13 +255,13 @@ async def _BackupChannels(guild: disnake.Guild, backup_data: Dict[str, Any]) -> 
             backup_data["channels_data"].append(channel_data)
     
     for channel in guild.channels:
-        if channel in system_channels or isinstance(channel, disnake.CategoryChannel):
+        if channel in system_channels or isinstance(channel, discord.CategoryChannel):
             continue
         
         channel_overwrites = []
         for target, permissions in channel.overwrites.items():
             target_id = str(target.id)
-            target_type = "role" if isinstance(target, disnake.Role) else "member"
+            target_type = "role" if isinstance(target, discord.Role) else "member"
             allow, deny = permissions.pair()
             channel_overwrites.append({
                 "id": target_id,
@@ -300,20 +300,20 @@ async def _BackupChannels(guild: disnake.Guild, backup_data: Dict[str, Any]) -> 
             "category": channel.category.name if channel.category else None
         }
         
-        if isinstance(channel, disnake.TextChannel):
+        if isinstance(channel, discord.TextChannel):
             channel_data.update({
                 "nsfw": channel.is_nsfw(),
                 "topic": channel.topic,
                 "slowmode_delay": channel.slowmode_delay,
                 "default_auto_archive_duration": channel.default_auto_archive_duration
             })
-        elif isinstance(channel, disnake.VoiceChannel):
+        elif isinstance(channel, discord.VoiceChannel):
             channel_data.update({
                 "bitrate": channel.bitrate,
                 "user_limit": channel.user_limit,
                 "rtc_region": channel.rtc_region
             })
-        elif isinstance(channel, disnake.StageChannel):
+        elif isinstance(channel, discord.StageChannel):
             channel_data.update({
                 "topic": channel.topic,
                 "user_limit": channel.user_limit,
@@ -349,4 +349,4 @@ def _IsCategory(channel_data: Dict[str, Any]) -> bool:
     
     return False
 
-# V1.3.4
+# V1.3.5
