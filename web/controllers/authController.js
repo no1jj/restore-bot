@@ -115,7 +115,6 @@ async function processAuth(guildId, code, hcaptchaResponse, req, res, tokenResul
             return res.status(404).render("auth_error", { ErrorCode: "4", Ctx: "역할 설정이 없습니다." });
         }
         
-        // roleId를 문자열로 변환 - 미리 선언
         const roleIdStr = roleId.toString();
         
         try {
@@ -242,7 +241,7 @@ async function processAuth(guildId, code, hcaptchaResponse, req, res, tokenResul
                 return res.status(500).render("auth_error", { ErrorCode: "0", Ctx: "역할 적용 중 오류가 발생했습니다." });
             }
             
-            await webhookService.sendWebhookLog(guildId, '인증 성공', `사용자가 인증을 완료했습니다.`, 0x4CD964, [
+            await webhookService.sendWebhookLog(guildId, '인증 로그', `사용자가 인증을 완료했습니다.`, 0x4CD964, [
                 { name: '서버 ID', value: `\`${guildId}\`` },
                 { name: '역할 ID', value: `\`${roleIdStr}\`` }
             ], userInfo);
@@ -275,4 +274,4 @@ async function processAuth(guildId, code, hcaptchaResponse, req, res, tokenResul
     }
 }
 
-// V1.3
+// V1.3.1

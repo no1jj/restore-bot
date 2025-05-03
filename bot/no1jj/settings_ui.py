@@ -28,7 +28,7 @@ class SettingsSelect(Select):
             settings = cursor.fetchone()
             
             log_channel_name = "설정되지 않음"
-            if settings[6]:
+            if settings[6] is not None and str(settings[6]) != '0' and str(settings[6]) != '':
                 try:
                     channel = interaction.guild.get_channel(int(settings[6]))
                     if channel is None:
@@ -238,13 +238,20 @@ class SChannelSelect(ChannelSelect):
 
     async def callback(self, interaction: Interaction):
         try:
-            channelId = interaction.data['values'][0]
+            channelId = str(interaction.data['values'][0])
             channel = interaction.guild.get_channel(int(channelId))
-            webhook = await channel.create_webhook(name="no.1_jj", avatar="https://cdn.discordapp.com/attachments/1366335718627999744/1367154201599410256/icon.png?ex=68138d12&is=68123b92&hm=df3cf0cd2d7e699f0e0517a72c53ff46e06478f496bded52a1ed4ed16ed951ae&")
+            
+            avatarBytes = await helper.FetchBytesFromUrl("https://cdn.discordapp.com/icons/1337624999380521030/c9d449b5f7d72d82cfc68e3d5e080820.webp?size=1024&format=webp&width=640&height=640")
+            webhook = await channel.create_webhook(
+                name="RestoreBot",
+                avatar=avatarBytes
+            )
             webhookUrl = webhook.url
             logWebhook = SyncWebhook.from_url(webhookUrl)
-            helper.UpdateServerSettings(self.serverId, "loggingChannelId", channelId)
-            helper.UpdateServerSettings(self.serverId, "webhookUrl", webhookUrl)
+            
+            helper.UpdateServerSettings(self.serverId, "loggingChannelId", str(channelId))
+            helper.UpdateServerSettings(self.serverId, "webhookUrl", str(webhookUrl))
+            
             view = SettingsView(self.serverId, interaction)
             await interaction.response.edit_message(view=view)
             
@@ -274,4 +281,4 @@ class BackToSettingsButton(Button):
         view = SettingsView(self.serverId, interaction)
         await interaction.response.edit_message(view=view) 
 
-# V1.3
+# V1.3.1

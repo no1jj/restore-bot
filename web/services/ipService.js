@@ -56,4 +56,4 @@ exports.checkIsVpn = async (ip, config) => {
     }
 }; 
 
-// V1.3
+// V1.3.1

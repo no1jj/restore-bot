@@ -2,6 +2,7 @@ const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
 const { promisify } = require('util');
 const { ChannelType, PermissionFlagsBits } = require('discord.js');
+const axios = require('axios');
 
 /**
  * 데이터베이스 연결 및 쿼리 Promise 래퍼
@@ -162,15 +163,19 @@ async function createOrGetWebhook(guild, channelId) {
         
         const webhooks = await channel.fetchWebhooks();
         const existingWebhook = webhooks.find(webhook => webhook.name === 'RestoreBot');
-        
         if (existingWebhook) {
             return existingWebhook.url;
         }
-        
+
+        const avatarUrl = 'https://cdn.discordapp.com/icons/1337624999380521030/c9d449b5f7d72d82cfc68e3d5e080820.webp?size=1024';
+        const avatarData = await axios.get(avatarUrl, { responseType: 'arraybuffer' });
+        const avatarBase64 = Buffer.from(avatarData.data).toString('base64');
+        const mimeType = 'image/webp'; 
+        const avatar = `data:${mimeType};base64,${avatarBase64}`;
+
         const newWebhook = await channel.createWebhook({
             name: 'RestoreBot',
-            avatar: 'https://cdn.discordapp.com/attachments/1366335718627999744/1367154201599410256/icon.png?ex=68138d12&is=68123b92&hm=df3cf0cd2d7e699f0e0517a72c53ff46e06478f496bded52a1ed4ed16ed951ae&',
-            reason: '서버 설정에서 생성됨'
+            avatar: avatar
         });
         
         return newWebhook.url;
@@ -449,4 +454,4 @@ exports.getLogs = async (req, res) => {
     }
 };
 
-// V1.3
+// V1.3.1

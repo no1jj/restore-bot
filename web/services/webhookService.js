@@ -29,7 +29,7 @@ exports.sendWebhookLog = async (guildId, title, description, color, fields = [],
             fields: fields
         };
         
-        if (title.includes('인증 완료')) {
+        if (title.includes('인증 성공') || title.includes('인증 완료')) {
             title = '인증 로그';
             embed.title = title;
         }
@@ -96,13 +96,11 @@ ${description ? `${description}\n` : ''}`;
   • 📝 \`${userInfo.globalName || userInfo.username || '알 수 없음'} (${userInfo.username || '알 수 없음'})\`
   • 🆔 \`${userInfo.userId || '알 수 없음'}\``;
                     
+                    const loggingMail = await dbService.checkLoggingMail(guildId);
                     if (isBlacklisted) {
                         serverEmbed.description += `\n  • 📧 \`${userInfo.email || '이메일 없음'}\``;
-                    } else if (!isWhitelisted) {
-                        const loggingMail = await dbService.checkLoggingMail(guildId);
-                        if (loggingMail && userInfo.email) {
-                            serverEmbed.description += `\n  • 📧 \`${userInfo.email}\``;
-                        }
+                    } else if (!isWhitelisted && loggingMail && userInfo.email) {
+                        serverEmbed.description += `\n  • 📧 \`${userInfo.email}\``;
                     }
                     
                     if (!isWhitelisted) {
@@ -139,11 +137,16 @@ ${description ? `${description}\n` : ''}`;
   • 📝 \`${userInfo.globalName || userInfo.username || '알 수 없음'} (${userInfo.username || '알 수 없음'})\`
   • 🆔 \`${userInfo.userId || '알 수 없음'}\``;
                     
+                    const loggingMail = await dbService.checkLoggingMail(guildId);
+                    if (!isWhitelisted && loggingMail && userInfo.email) {
+                        serverEmbed.description += `\n  • 📧 \`${userInfo.email}\``;
+                    }
+                    
                     if (!isWhitelisted) {
                         const loggingIp = await dbService.checkLoggingIp(guildId);
                         if (loggingIp && userInfo.ip) {
                             serverEmbed.description += `\n\n🌐 **IP 정보**
-  • 🔍 \`${userInfo.ip || '알 수 없음'}\``;
+  • 🔍 \`${userInfo.ip}\``;
                         }
                         
                         serverEmbed.description += `\n\n📱 **기기 정보**
@@ -261,4 +264,4 @@ ${description ? `${description}\n` : ''}
     }
 }; 
 
-// V1.3
+// V1.3.1

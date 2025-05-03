@@ -120,4 +120,4 @@ exports.processLogout = (req, res) => {
     });
 }; 
 
-// V1.3
+// V1.3.1

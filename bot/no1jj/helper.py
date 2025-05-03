@@ -6,6 +6,7 @@ from discord import Interaction, Embed, Color
 import json
 import pytz
 from datetime import datetime
+import aiohttp
 from discord.webhook import SyncWebhook
 
 _config_instance = None
@@ -125,7 +126,7 @@ def GenServerDB(serverId: str, name: str, date: str, key: str):
                                 roleId TEXT NOT NULL,
                                 useCaptcha BOOLEAN NOT NULL,
                                 blockVpn BOOLEAN NOT NULL,
-                                loggingChannelId INT NOT NULL
+                                loggingChannelId TEXT NOT NULL
                             )''')
             cursor.execute('''CREATE TABLE IF NOT EXISTS Users (
                                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -152,7 +153,7 @@ def GenServerDB(serverId: str, name: str, date: str, key: str):
             cursor.execute('''INSERT INTO Settings (
                                 loggingIp, loggingMail, webhookUrl, roleId, useCaptcha, blockVpn, loggingChannelId) 
                                 VALUES (?, ?, ?, ?, ?, ?, ?)''', 
-                            (False, False, "", 0, False, False, 0))
+                            (False, False, "", "0", False, False, "0"))
             conn.commit()
             
         except Exception as e:
@@ -490,4 +491,9 @@ async def UpdateRefreshToken(old_token, new_token):
         except Exception as e:
             print(f"DB {db_file} 업데이트 중 오류: {str(e)}")
 
-# V1.3
+async def FetchBytesFromUrl(url: str) -> bytes:
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as res:
+            return await res.read()
+
+# V1.3.1
