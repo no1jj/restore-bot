@@ -20,7 +20,7 @@ async def CreateServerBackup(guild: disnake.Guild, backup_directory: str, backup
         "channels_data": [],
         "emojis_data": [],
         "stickers_data": [],
-        "banned_users": {},
+        "banned_users": [],
         "automod_rules": []
     }
     
@@ -121,8 +121,9 @@ def _BackupRoles(guild: disnake.Guild, backup_data: Dict[str, Any]) -> None:
         })
 
 async def _BackupBannedUsers(guild: disnake.Guild, backup_data: Dict[str, Any]) -> None:
-    banned_users = await guild.bans(limit=None).flatten()
-    ban_list = [{'id': ban.user.id, "reason": ban.reason} for ban in banned_users]
+    ban_list = []
+    async for ban in guild.bans(limit=None):
+        ban_list.append({'id': ban.user.id, "reason": ban.reason})
     backup_data['banned_users'] = ban_list
 
 async def _BackupEmojis(guild: disnake.Guild, backup_directory: str, backup_data: Dict[str, Any]) -> None:
@@ -160,7 +161,8 @@ async def _BackupStickers(guild: disnake.Guild, backup_directory: str, backup_da
         })
 
 def _BackupAutomodRules(guild: disnake.Guild, backup_data: Dict[str, Any]) -> None:
-    headers = {"Authorization": f"Bot {helper.LoadConfig.token}"}
+    config = helper.LoadConfig()
+    headers = {"Authorization": f"Bot {config.botToken}"}
     response = requests.get(f"https://discord.com/api/v9/guilds/{guild.id}/auto-moderation/rules", headers=headers)
     
     if response.status_code == 200:
@@ -225,4 +227,4 @@ def _SortBackupData(backup_data: Dict[str, Any]) -> None:
         if 'channels' in category:
             category['channels'] = sorted(category['channels']) 
 
-# V1.3.2
+# V1.3.3

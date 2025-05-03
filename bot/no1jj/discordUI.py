@@ -46,6 +46,7 @@ from .list_ui import (
 )
 
 from .restore_ui import (
+    RestoreTypeSelect,
     RestoreView,
     RestoreResultEmbed
 )
@@ -62,4 +63,4 @@ from .common_ui import (
 
 from . import backup_utils
 
-# V1.3.2
+# V1.3.3
