@@ -84,7 +84,7 @@ jobs:
         run: |
           if [ -z "$DISCORD_WEBHOOK" ]; then
             echo "DISCORD_WEBHOOK is not set. Skipping notification."
-            exit 1
+            exit 0  # 워크플로우 실패 방지를 위해 exit 1 대신 exit 0 사용
           fi
           
           EVENT="${{ steps.context.outputs.Event }}"
