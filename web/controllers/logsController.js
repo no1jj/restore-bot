@@ -79,6 +79,10 @@ exports.getLogs = async (req, res) => {
         const serverDbPath = path.join(config.DBFolderPath, `${serverId}.db`);
         db = getDb(serverDbPath);
         
+        const settingsQuery = await db.get("SELECT loggingIp, loggingMail FROM Settings");
+        const loggingIp = settingsQuery && settingsQuery.loggingIp === 1;
+        const loggingMail = settingsQuery && settingsQuery.loggingMail === 1;
+        
         const totalLogs = await db.get("SELECT COUNT(*) as count FROM Logs");
         
         const logs = await db.all(`
@@ -98,10 +102,15 @@ exports.getLogs = async (req, res) => {
         const enhancedLogs = await Promise.all(
             logs.map(async (log) => {
                 const userInfo = await fetchUserInfo(log.userId, discordClient);
-                return {
+                
+                const filteredLog = {
                     ...log,
+                    ip: loggingIp ? log.ip : null,
+                    email: loggingMail ? log.email : null,
                     userInfo
                 };
+                
+                return filteredLog;
             })
         );
         
@@ -136,4 +145,4 @@ exports.getLogs = async (req, res) => {
     }
 };
 
-// V1.4.2
+// V1.5.2

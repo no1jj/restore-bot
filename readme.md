@@ -102,7 +102,7 @@ RestoreBot은 디스코드 서버 관리자를 위한 종합적인 보안 및 �
 ### 설치 단계
 1. 릴리즈 다운로드
 ```bash
-https://github.com/no1jj/restore-bot/releases/tag/V1.5.1
+https://github.com/no1jj/restore-bot/releases/tag/V1.5.2
 ```
 
 2. 필요한 패키지 설치

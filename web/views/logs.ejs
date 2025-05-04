@@ -406,19 +406,19 @@
                                             <%= formattedName %>
                                         <% 
                                                 } else {
-                                                    %><%= log.userId || '-' %><%
+                                                    %><%= log.userId || '알 수 없음' %><%
                                                 }
                                             } catch (e) {
-                                                %><%= log.userId || '-' %><%
+                                                %><%= log.userId || '알 수 없음' %><%
                                             }
                                         %>
                                     <% } else { %>
-                                        <%= log.userId || '-' %>
+                                        <%= log.userId || '알 수 없음' %>
                                     <% } %>
                                 </td>
-                                <td class="truncated"><%= log.content %></td>
+                                <td><%= log.content || '-' %></td>
                                 <td><%= log.ip || '-' %></td>
-                                <td class="truncated"><%= log.email || '-' %></td>
+                                <td><%= log.email || '-' %></td>
                             </tr>
                         <% }); %>
                     </tbody>
@@ -505,4 +505,4 @@
 </body>
 </html>
 
-<!-- V1.4.2 -->
+<!-- V1.5.2 -->

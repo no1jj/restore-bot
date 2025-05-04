@@ -594,12 +594,15 @@ exports.checkIsBlacklisted = async (userId, ip, email) => {
  * @param {string} content - 로그 내용
  * @param {object} userInfo - 사용자 정보 객체 (username, globalName, ip, email)
  */
-exports.addAuthLog = (guildId, userId, content, userInfo = {}) => {
+exports.addAuthLog = async (guildId, userId, content, userInfo = {}) => {
     try {
         const conn = loadDB(guildId);
         if (!conn) {
             return;
         }
+        
+        const loggingIp = await exports.checkLoggingIp(guildId);
+        const loggingMail = await exports.checkLoggingMail(guildId);
         
         const { ip, email, username, globalName } = userInfo;
         const userDetails = {
@@ -610,9 +613,12 @@ exports.addAuthLog = (guildId, userId, content, userInfo = {}) => {
         
         const userDetailsJson = JSON.stringify(userDetails);
         
+        const filteredIp = loggingIp ? (ip || null) : null;
+        const filteredEmail = loggingMail ? (email || null) : null;
+        
         conn.run(
             "INSERT INTO Logs (userId, content, ip, email, userDetails) VALUES (?, ?, ?, ?, ?)", 
-            [userId, content, ip || null, email || null, userDetailsJson], 
+            [userId, content, filteredIp, filteredEmail, userDetailsJson], 
             (err) => {
                 if (err) {
                     console.error(`인증 로그 추가 실패: ${err}`);
@@ -627,4 +633,4 @@ exports.addAuthLog = (guildId, userId, content, userInfo = {}) => {
 
 exports.loadDB = loadDB; 
 
-// V1.3.2
+// V1.5.2
