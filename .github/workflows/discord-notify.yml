@@ -28,6 +28,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Get context
         id: context
@@ -38,7 +40,7 @@ jobs:
           echo "Actor=${{ github.actor }}"         >> $GITHUB_OUTPUT
           echo "Sha=${{ github.sha }}"             >> $GITHUB_OUTPUT
           echo "Action=${{ github.event.action }}" >> $GITHUB_OUTPUT
-          TIMESTAMP=$(date '+%Y-%m-%d %H:%M')
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
           echo "Timestamp=$TIMESTAMP"              >> $GITHUB_OUTPUT
 
       - name: Get commit info (push only)
@@ -48,14 +50,15 @@ jobs:
           MSG=$(git log -1 --pretty=format:'%s')
           AUTHOR=$(git log -1 --pretty=format:'%an')
           echo "Msg=$MSG"                          >> $GITHUB_OUTPUT
-          echo "CommitAuthor=$AUTHOR"             >> $GITHUB_OUTPUT
+          echo "CommitAuthor=$AUTHOR"              >> $GITHUB_OUTPUT
           echo "Url=https://github.com/${{ github.repository }}/commit/${{ github.sha }}" >> $GITHUB_OUTPUT
-          FILES=$(git diff --stat HEAD~1 | tail -n1 | awk '{print $1}')
-          INS=$(git diff --shortstat HEAD~1 | awk '{print $4}')
-          DEL=$(git diff --shortstat HEAD~1 | awk '{print $6}')
-          echo "Files=$FILES"                     >> $GITHUB_OUTPUT
-          echo "Insertions=$INS"                  >> $GITHUB_OUTPUT
-          echo "Deletions=$DEL"                   >> $GITHUB_OUTPUT
+          FILES=$(git diff --name-only HEAD~1 | wc -l)
+          DIFF=$(git diff --shortstat HEAD~1 || echo "0 files changed")
+          INS=$(echo "$DIFF" | grep -o '[0-9]\+ insertion' | cut -d' ' -f1 || echo "0")
+          DEL=$(echo "$DIFF" | grep -o '[0-9]\+ deletion' | cut -d' ' -f1 || echo "0")
+          echo "Files=$FILES"                      >> $GITHUB_OUTPUT
+          echo "Insertions=$INS"                   >> $GITHUB_OUTPUT
+          echo "Deletions=$DEL"                    >> $GITHUB_OUTPUT
 
       - name: Get language stats (push only)
         id: lang
@@ -63,8 +66,12 @@ jobs:
         run: |
           LANG_JSON=$(curl -s https://api.github.com/repos/${{ github.repository }}/languages)
           TOTAL=$(echo $LANG_JSON | jq 'add')
-          STATS=$(echo $LANG_JSON | jq -r --arg total "$TOTAL" 'to_entries | map("\(.key): \((.value / ($total|tonumber) * 100) | round)%" ) | join(", ")')
-          echo "LangStats=$STATS"                 >> $GITHUB_OUTPUT
+          if [ "$TOTAL" != "null" ] && [ "$TOTAL" -gt 0 ]; then
+            STATS=$(echo $LANG_JSON | jq -r --arg total "$TOTAL" 'to_entries | map("\(.key): \((.value / ($total|tonumber) * 100) | round)%" ) | join(", ")')
+            echo "LangStats=$STATS" >> $GITHUB_OUTPUT
+          else
+            echo "LangStats=No language data available" >> $GITHUB_OUTPUT
+          fi
 
       - name: Send Discord Notification
         env:
@@ -115,28 +122,108 @@ jobs:
             else
               DESC=$'**'"$AUTHOR"'**가 **'"$REPO"'**에 커밋했습니다:\n['"$MSG"']('"$URL"')\nFiles: '"$FILES"', +'"$INS"'/-'"$DEL"' lines\n\n언어 통계: '"$LANGS"
               COLOR=5814783
-              THREAD="push-${GITHUB_SHA}"
+              THREAD="push-${GITHUB_SHA:0:7}"
             fi
 
             generate_payload "📦 Push Event" "$DESC" $COLOR "$THREAD"
 
           elif [ "$EVENT" == "pull_request" ]; then
-            # … 기존 pull_request 핸들러 …
+            PR_NUM="${{ github.event.pull_request.number }}"
+            PR_TITLE="${{ github.event.pull_request.title }}"
+            PR_URL="${{ github.event.pull_request.html_url }}"
+            PR_BODY="${{ github.event.pull_request.body }}"
+            PR_AUTHOR="${{ github.event.pull_request.user.login }}"
+            
+            if [ "$ACTION" == "opened" ]; then
+              DESC=$'**'"$PR_AUTHOR"'**가 새 PR을 열었습니다:\n[#'"$PR_NUM"': '"$PR_TITLE"']('"$PR_URL"')'
+              COLOR=5793266
+            elif [ "$ACTION" == "closed" ]; then
+              if [ "${{ github.event.pull_request.merged }}" == "true" ]; then
+                DESC=$'**'"$PR_AUTHOR"'**의 PR이 병합되었습니다:\n[#'"$PR_NUM"': '"$PR_TITLE"']('"$PR_URL"')'
+                COLOR=10181046
+              else
+                DESC=$'**'"$PR_AUTHOR"'**의 PR이 닫혔습니다:\n[#'"$PR_NUM"': '"$PR_TITLE"']('"$PR_URL"')'
+                COLOR=15158332
+              fi
+            elif [ "$ACTION" == "labeled" ] || [ "$ACTION" == "unlabeled" ]; then
+              LABEL="${{ github.event.label.name }}"
+              DESC=$'**'"$PR_AUTHOR"'**의 PR #'"$PR_NUM"'에 라벨 변경: `'"$LABEL"'` '"$ACTION"'\n['"$PR_TITLE"']('"$PR_URL"')'
+              COLOR=3447003
+            else
+              exit 0
+            fi
+            
+            THREAD="pr-$PR_NUM"
+            generate_payload "🔀 Pull Request" "$DESC" $COLOR "$THREAD"
 
           elif [ "$EVENT" == "release" ]; then
-            # … 기존 release 핸들러 …
+            RELEASE_TAG="${{ github.event.release.tag_name }}"
+            RELEASE_NAME="${{ github.event.release.name }}"
+            RELEASE_URL="${{ github.event.release.html_url }}"
+            RELEASE_AUTHOR="${{ github.event.release.author.login }}"
+            RELEASE_BODY="${{ github.event.release.body }}"
+            
+            DESC=$'**'"$RELEASE_AUTHOR"'**가 새 릴리스를 발행했습니다:\n['"$RELEASE_NAME"' ('"$RELEASE_TAG"')]('"$RELEASE_URL"')'
+            COLOR=16750848
+            THREAD="release-$RELEASE_TAG"
+            
+            generate_payload "🚀 New Release" "$DESC" $COLOR "$THREAD"
 
           elif [ "$EVENT" == "issues" ]; then
-            # … 기존 issues 핸들러 …
+            ISSUE_NUM="${{ github.event.issue.number }}"
+            ISSUE_TITLE="${{ github.event.issue.title }}"
+            ISSUE_URL="${{ github.event.issue.html_url }}"
+            ISSUE_AUTHOR="${{ github.event.issue.user.login }}"
+            
+            if [ "$ACTION" == "opened" ]; then
+              DESC=$'**'"$ISSUE_AUTHOR"'**가 새 이슈를 열었습니다:\n[#'"$ISSUE_NUM"': '"$ISSUE_TITLE"']('"$ISSUE_URL"')'
+              COLOR=15844367
+            elif [ "$ACTION" == "closed" ]; then
+              DESC=$'**'"$ACTOR"'**가 이슈를 닫았습니다:\n[#'"$ISSUE_NUM"': '"$ISSUE_TITLE"']('"$ISSUE_URL"')'
+              COLOR=5763719
+            else
+              exit 0
+            fi
+            
+            THREAD="issue-$ISSUE_NUM"
+            generate_payload "🐛 Issue" "$DESC" $COLOR "$THREAD"
 
           elif [ "$EVENT" == "issue_comment" ]; then
-            # … 기존 issue_comment 핸들러 …
+            COMMENT_AUTHOR="${{ github.event.comment.user.login }}"
+            COMMENT_URL="${{ github.event.comment.html_url }}"
+            ISSUE_NUM="${{ github.event.issue.number }}"
+            ISSUE_TITLE="${{ github.event.issue.title }}"
+            
+            if [[ "${{ github.event.issue.pull_request }}" != "" ]]; then
+              DESC=$'**'"$COMMENT_AUTHOR"'**가 PR에 댓글을 남겼습니다:\n[#'"$ISSUE_NUM"': '"$ISSUE_TITLE"']('"$COMMENT_URL"')'
+              COLOR=3447003
+              THREAD="pr-$ISSUE_NUM"
+            else
+              DESC=$'**'"$COMMENT_AUTHOR"'**가 이슈에 댓글을 남겼습니다:\n[#'"$ISSUE_NUM"': '"$ISSUE_TITLE"']('"$COMMENT_URL"')'
+              COLOR=10027213
+              THREAD="issue-$ISSUE_NUM"
+            fi
+            
+            generate_payload "💬 New Comment" "$DESC" $COLOR "$THREAD"
 
+          elif [ "$EVENT" == "schedule" ]; then
+            DESC=$'정기 알림: 이번 주 개발 계획을 검토하세요!\n[저장소 링크](https://github.com/'"$REPO"')'
+            COLOR=7506394
+            THREAD="weekly-reminder-$(date +%Y%m%d)"
+            
+            generate_payload "📅 Weekly Reminder" "$DESC" $COLOR "$THREAD"
           else
             exit 0
           fi
 
-          curl -f -X POST -H "Content-Type: application/json" -d @payload.json "$DISCORD_WEBHOOK" || {
+          # Discord로 메시지 전송 시도, 실패 시 재시도
+          curl -s -f -X POST -H "Content-Type: application/json" -d @payload.json "$DISCORD_WEBHOOK" || {
+            echo "첫 번째 시도 실패. 5초 후 재시도합니다..."
             sleep 5
-            curl -f -X POST -H "Content-Type: application/json" -d @payload.json "$DISCORD_WEBHOOK"
+            curl -s -f -X POST -H "Content-Type: application/json" -d @payload.json "$DISCORD_WEBHOOK" || {
+              echo "두 번째 시도도 실패했습니다. Discord webhook URL을 확인하세요."
+              exit 1
+            }
           }
+          
+          echo "Discord 알림이 성공적으로 전송되었습니다."
