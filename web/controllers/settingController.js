@@ -395,6 +395,12 @@ exports.getLogs = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10;
         const offset = (page - 1) * limit;
         
+        const guild = await discordClient.guilds.fetch(serverId).catch(() => null);
+        if (!guild) {
+            req.flash('error', '봇이 서버에 접근할 수 없습니다. 다시 로그인해주세요.');
+            return res.redirect('/login');
+        }
+        
         const serverDbPath = path.join(config.DBFolderPath, `${serverId}.db`);
         db = getDb(serverDbPath);
         
@@ -435,7 +441,8 @@ exports.getLogs = async (req, res) => {
             },
             serverInfo: {
                 serverId: serverId,
-                name: req.session.serverName || '서버 정보'
+                name: guild.name || req.session.serverName || '서버 정보',
+                iconURL: guild.iconURL({ dynamic: true }) || null
             },
             csrfToken: req.csrfToken()
         });
@@ -494,4 +501,4 @@ exports.getServerStats = async (req, res) => {
     }
 };
 
-// V1.4.1
+// V1.4.2

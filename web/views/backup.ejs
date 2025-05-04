@@ -855,7 +855,7 @@
                             const controller = new AbortController();
                             const timeoutId = setTimeout(() => controller.abort(), 600000); 
                             
-                            const response = await fetch('/backup/create', {
+                            const response = await fetch('/setting/backup/create', {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
@@ -956,7 +956,7 @@
                     loadingText.textContent = '백업 정보 로딩 중...';
                     loadingOverlay.style.display = 'flex';
                     
-                    const response = await fetch(`/backup/details/${backupPath}`, {
+                    const response = await fetch(`/setting/backup/details/${backupPath}`, {
                         method: 'GET',
                         headers: {
                             'CSRF-Token': csrfToken
@@ -1070,7 +1070,7 @@
                 loadingOverlay.style.display = 'flex';
                 confirmDeleteModal.style.display = 'none';
                 
-                const response = await fetch('/backup/delete', {
+                const response = await fetch('/setting/backup/delete', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1117,4 +1117,4 @@
 </body>
 </html>
 
-<!-- V1.4 --> 
+<!-- V1.4.2 --> 

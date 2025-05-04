@@ -65,7 +65,7 @@ const backupRouter = require('./routes/backup');
 app.use('/', indexRouter);
 app.use('/verify', authRouter);
 app.use('/setting', settingRouter);
-app.use('/backup', backupRouter);
+app.use('/setting/backup', backupRouter);
 app.use('/', loginRouter);
 
 app.use((req, res) => {
@@ -95,4 +95,4 @@ app.listen(port, () => {
 
 module.exports = app; 
 
-// V1.4
+// V1.4.2
