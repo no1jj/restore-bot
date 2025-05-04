@@ -18,16 +18,13 @@ on:
     types: [opened, closed]
   issue_comment:
     types: [created]
-  workflow_run:
-    workflows:
-      - "Discord Notification"    # ← 모니터링할 워크플로우 name
-    types: [completed]
   schedule:
-    - cron: '0 9 * * 1'            # 매주 월요일 한국시간 09:00
+    - cron: '0 9 * * 1'  # 매주 월요일 한국시간 09:00
 
 jobs:
   notify:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -124,12 +121,22 @@ jobs:
             generate_payload "📦 Push Event" "$DESC" $COLOR "$THREAD"
 
           elif [ "$EVENT" == "pull_request" ]; then
-            # ... 이하 동일
+            # … 기존 pull_request 핸들러 …
+
+          elif [ "$EVENT" == "release" ]; then
+            # … 기존 release 핸들러 …
+
+          elif [ "$EVENT" == "issues" ]; then
+            # … 기존 issues 핸들러 …
+
+          elif [ "$EVENT" == "issue_comment" ]; then
+            # … 기존 issue_comment 핸들러 …
+
+          else
             exit 0
           fi
 
           curl -f -X POST -H "Content-Type: application/json" -d @payload.json "$DISCORD_WEBHOOK" || {
-            echo "Webhook send failed, retrying..."
             sleep 5
             curl -f -X POST -H "Content-Type: application/json" -d @payload.json "$DISCORD_WEBHOOK"
           }
