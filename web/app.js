@@ -61,11 +61,15 @@ const authRouter = require('./routes/auth');
 const settingRouter = require('./routes/setting');
 const loginRouter = require('./routes/login');
 const backupRouter = require('./routes/backup');
+const logsRouter = require('./routes/logs');
+const sendRouter = require('./routes/send');
 
 app.use('/', indexRouter);
 app.use('/verify', authRouter);
 app.use('/setting', settingRouter);
 app.use('/setting/backup', backupRouter);
+app.use('/setting/logs', logsRouter);
+app.use('/setting/send', sendRouter);
 app.use('/', loginRouter);
 
 app.use((req, res) => {

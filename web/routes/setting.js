@@ -42,12 +42,8 @@ router.post('/update', authMiddleware, csrfProtection, settingsValidation, (req,
     next();
 }, settingController.updateSettings);
 
-router.post('/send-auth-message', csrfProtection, authMiddleware, express.json(), settingController.sendAuthMessage);
-
-router.get('/logs', csrfProtection, authMiddleware, settingController.getLogs);
-
 router.get('/stats', authMiddleware, settingController.getServerStats);
 
 module.exports = router; 
 
-// V1.4.1
+// V1.4.2

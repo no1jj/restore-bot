@@ -1124,7 +1124,7 @@
                         </div>
                         <div class="card-body">
                             <div class="form-group">
-                                <label for="recovery-key">서버 복구 키 (백업 복원 시 필요)</label>
+                                <label for="recovery-key">서버 복구 키</label>
                                 <div class="input-group">
                                     <input type="password" id="recovery-key" class="form-control" value="<%= serverInfo.key %>" readonly>
                                     <div class="input-group-append">
@@ -1296,9 +1296,7 @@
                         closeSideMenuHandler();
                         break;
                     case 'auth':
-                        sections.forEach(section => section.classList.remove('active'));
-                        document.getElementById('authSection').classList.add('active');
-                        closeSideMenuHandler();
+                        window.location.href = '/setting/send';
                         break;
                     case 'logs':
                         window.location.href = '/setting/logs';
@@ -1394,7 +1392,7 @@
                 };
                 
                 try {
-                    const response = await fetch('/setting/send-auth-message', {
+                    const response = await fetch('/setting/send', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
