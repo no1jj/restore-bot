@@ -4,6 +4,13 @@
   <img src="https://cdn.discordapp.com/attachments/1285786391757848643/1367123430956072960/image.png?ex=68137069&is=68121ee9&hm=9b81c1e364d8b5309ff7171ee3133970d4578f6666d4a0deb9fc89f43980df1f&" alt="RestoreBot" width="2000">
   <br>
   <p><strong>디스코드 서버의 완벽한 보안과 복구를 위한 고급 인증 솔루션</strong></p>
+  
+  <p>
+    <img src="https://img.shields.io/badge/version-V1.5-blue.svg" alt="Version">
+    <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License">
+    <img src="https://img.shields.io/badge/node-%3E%3D14.0.0-brightgreen.svg" alt="Node">
+    <img src="https://img.shields.io/badge/python-%3E%3D3.11-blue.svg" alt="Python">
+  </p>
 </div>
 
 ## 🚀 소개
@@ -14,6 +21,7 @@ RestoreBot은 디스코드 서버 관리자를 위한 종합적인 보안 및 �
 - **🔐 고급 인증 시스템**: 디스코드 OAuth2를 통한 안전한 인증 프로세스
 - **🛡️ 강력한 보안 기능**: VPN 감지, 화이트리스트/블랙리스트, hCaptcha 통합
 - **🔄 서버 복구 기능**: 유저 및 서버 구조 복구 기능
+- **🔗 고유 링크 시스템**: 서버별 맞춤 URL로 인증 페이지 쉽게 공유
 - **📊 상세한 로깅 시스템**: 모든 인증 활동에 대한 투명한 기록
 - **⚙️ 손쉬운 관리**: 직관적인 웹 기반 대시보드 및 봇 명령어
 
@@ -29,6 +37,12 @@ RestoreBot은 디스코드 서버 관리자를 위한 종합적인 보안 및 �
 - **안전한 OAuth2 인증**: 디스코드의 공식 인증 시스템을 통한 보안 강화
 - **커스터마이징 가능한 UI**: 서버에 맞는 인증 메시지 및 버튼 설정
 - **역할 자동 부여**: 인증 성공 시 지정된 역할 자동 부여
+
+### 🔗 고유 링크 시스템 (NEW)
+- **서버별 맞춤 URL**: 서버별 고유한 짧은 URL 생성 가능
+- **링크 통계**: 방문 횟수, 생성일, 마지막 방문 날짜 등 상세 정보 제공
+- **웹 패널 관리**: 웹 패널을 통한 손쉬운 링크 설정 및 관리
+- **봇 명령어 지원**: 디스코드 봇 명령어로도 링크 설정 및 관리 가능
 
 ### 🛡️ 보안 기능
 - **화이트리스트/블랙리스트**: 다양한 기준으로 사용자 접근 제어
@@ -46,6 +60,37 @@ RestoreBot은 디스코드 서버 관리자를 위한 종합적인 보안 및 �
   - **네트워크 정보**: IP 주소, 지역, ISP (관리자 설정에 따라 선택적)
 - **관리자 로그**: 봇 소유자를 위한 종합적인 로그 시스템
 
+## 📷 스크린샷
+
+<div align="center">
+  <table>
+    <tr>
+      <td align="center">
+        <img src="https://cdn.discordapp.com/attachments/1337624999380521035/1368480107030904832/image.png?ex=68185fea&is=68170e6a&hm=0f3a5eb0e46560f4efbb3cfc3648935c6d12c84b6a453d78762018a2aa502382&" width="400px" alt="대시보드">
+        <br>
+        <em>메인 대시보드</em>
+      </td>
+      <td align="center">
+        <img src="https://cdn.discordapp.com/attachments/1337624999380521035/1368480531322376263/image.png?ex=6818604f&is=68170ecf&hm=e04a7a91a07e6bfe5f174572ab53ee1aa430c33eb304818ab5fff45a005f197d&" width="400px" alt="인증 페이지">
+        <br>
+        <em>인증 페이지</em>
+      </td>
+    </tr>
+    <tr>
+      <td align="center">
+        <img src="https://cdn.discordapp.com/attachments/1337624999380521035/1368480305152790599/image.png?ex=68186019&is=68170e99&hm=ad76258bfbc8e0297cbe8b3f3ecc5de1f2ee71f913621897fb89785670a5cf62&" width="400px" alt="고유 링크 설정">
+        <br>
+        <em>고유 링크 설정</em>
+      </td>
+      <td align="center">
+        <img src="https://cdn.discordapp.com/attachments/1337624999380521035/1368483851072045117/image.png?ex=68186367&is=681711e7&hm=4ca7f1ea4b0fc66ee409e4ea42557164c2e4796576ec9b5b40c70a6b9a81d15f&" width="400px" alt="백업 페이지">
+        <br>
+        <em>백업 화면</em>
+      </td>
+    </tr>
+  </table>
+</div>
+
 ## 🔧 설치 방법
 
 ### 요구 사항
@@ -57,7 +102,7 @@ RestoreBot은 디스코드 서버 관리자를 위한 종합적인 보안 및 �
 ### 설치 단계
 1. 릴리즈 다운로드
 ```bash
-https://github.com/no1jj/restore-bot/releases/tag/V1.1
+https://github.com/no1jj/restore-bot/releases/tag/V1.5.1
 ```
 
 2. 필요한 패키지 설치
@@ -120,7 +165,7 @@ https://discord.com/oauth2/authorize?client_id=YOUR_CLIENT_ID&permissions=8&scop
 - `/설정` - 서버 설정을 변경합니다
 - `/인증` - 인증 메시지를 생성합니다
 - `/인원` - 인증된 인원을 확인합니다
-- `/정보` - 서버 정보 및 설정을 확인합니다
+- `/정보` - 서버 정보, 설정 및 고유 링크 정보를 확인합니다
 - `/화이트리스트관리` - 화이트리스트 사용자 관리 [오너 전용]
 - `/블랙리스트관리` - 블랙리스트 사용자 관리 [오너 전용]
 - `/복구` - 서버 및 유저 복구를 시작합니다
@@ -128,9 +173,27 @@ https://discord.com/oauth2/authorize?client_id=YOUR_CLIENT_ID&permissions=8&scop
 
 ## 💻 웹 패널 기능
 - **서버 관리자 대시보드**: 웹 기반 설정 패널
+- **고유 링크 관리**: 맞춤형 URL 설정 및 통계 확인
 - **사용자 친화적 UI**: 직관적이고 현대적인 인터페이스
 - **실시간 설정 변경**: 설정 변경 사항 즉시 적용
 - **모바일 반응형 디자인**: 모든 기기에서 접근 가능
+
+## 📋 업데이트 내역
+
+### V1.5 (최신)
+- **고유 링크 시스템** 추가: 서버별 맞춤 URL 설정 및 관리 기능
+- 디스코드 봇 명령어로 고유 링크 설정 기능 추가
+- 웹 인터페이스 UI 개선
+- 버그 수정 및 성능 최적화
+
+### V1.3.4
+- VPN 감지 시스템 개선
+- 웹 패널 보안 강화
+- 디자인 업데이트 및 사용성 개선
+- 버그 수정 및 안정성 향상
+
+### V1.0
+- 초기 릴리즈
 
 ## 🔨 기술 스택
 - **백엔드**: Python, Discord.py, Discord.js

@@ -407,22 +407,19 @@ class CustomLinkInput(discord.ui.Modal, title="고유 링크 설정"):
             
             domain = helper.LoadConfig().domain
             fullUrl = f"{domain}/j/{customLink}"
-            
-            await helper.SendEmbed(
-                interaction=interaction, 
+            view = SettingsView(self.serverId, interaction)
+            await interaction.response.edit_message(view=view)
+            embed = Embed(
                 title="✅ 고유 링크 설정 완료", 
                 description=f"고유 링크가 **{customLink}**로 설정되었습니다.\n**링크:** `{fullUrl}`", 
                 color=Color.green()
             )
-            
-            if not interaction.response.is_done():
-                view = SettingsView(self.serverId, interaction)
-                await interaction.response.edit_message(view=view)
-            else:
-                view = SettingsView(self.serverId, interaction)
-                await interaction.message.edit(view=view)
+            await interaction.followup.send(embed=embed)
             
         except Exception as e:
-            await helper.ErrorEmbed(interaction, f"오류가 발생했습니다.\n\n{str(e)}")
+            if not interaction.response.is_done():
+                await interaction.response.send_message(f"오류가 발생했습니다: {str(e)}", ephemeral=True)
+            else:
+                await interaction.followup.send(f"오류가 발생했습니다: {str(e)}", ephemeral=True)
 
-#V1.5
+# V1.5.1

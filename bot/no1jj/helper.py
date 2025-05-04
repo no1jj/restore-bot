@@ -7,24 +7,25 @@ import json
 import pytz
 from datetime import datetime
 import aiohttp
+import discord
 from discord.webhook import SyncWebhook
 
-_config_instance = None
+_configInstance = None
 
 def LoadConfig():
-    global _config_instance
-    if _config_instance is not None:
-        return _config_instance
+    global _configInstance
+    if _configInstance is not None:
+        return _configInstance
         
     configPath = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'config.json')
     with open(configPath, 'r', encoding='utf-8') as f:
-        config_data = json.load(f)
+        configData = json.load(f)
         class Config: 
             def __init__(self, data):
                 for key, value in data.items():
                     setattr(self, key, value)
-        _config_instance = Config(config_data)
-        return _config_instance
+        _configInstance = Config(configData)
+        return _configInstance
 
 config = LoadConfig()
 
@@ -37,13 +38,13 @@ async def CheckPermission(interaction: Interaction, owner: bool = False):
         if not str(interaction.user.id) == str(config.ownerId):
             await ErrorEmbed(
                 interaction=interaction,
-                error_message="이 명령어를 사용할 수 없습니다.."
+                errorMessage="이 명령어를 사용할 수 없습니다.."
             )
             return False
     if not interaction.user.guild_permissions.administrator:
         await ErrorEmbed(
             interaction=interaction,
-            error_message="이 명령어를 사용하기 위해서는 서버 관리자 권한이 필요합니다."
+            errorMessage="이 명령어를 사용하기 위해서는 서버 관리자 권한이 필요합니다."
         )
         return False
     return True
@@ -51,86 +52,49 @@ async def CheckPermission(interaction: Interaction, owner: bool = False):
 
 def GenDB():
     config = LoadConfig()
-    filePath = config.DBPath
-
-    if not os.path.exists(os.path.dirname(filePath)):
-        os.makedirs(os.path.dirname(filePath))
+    filePath = os.path.join(config.DBPath)
+    if not os.path.exists(config.DBFolderPath):
+        os.makedirs(config.DBFolderPath)
 
     conn = None
     try:
         conn = sqlite3.connect(filePath)
         cursor = conn.cursor()
-        
-        cursor.execute('''CREATE TABLE IF NOT EXISTS WhiteListUserId (
-                            userId TEXT PRIMARY KEY
-                        )''')
-        cursor.execute('''CREATE TABLE IF NOT EXISTS WhiteListIp (
-                            ip TEXT PRIMARY KEY
-                        )''')
-        cursor.execute('''CREATE TABLE IF NOT EXISTS WhiteListMail (
-                            mail TEXT PRIMARY KEY
-                        )''')
-        cursor.execute('''CREATE TABLE IF NOT EXISTS BlackListUserId (
-                            userId TEXT PRIMARY KEY
-                        )''')
-        cursor.execute('''CREATE TABLE IF NOT EXISTS BlackListIp (
-                            ip TEXT PRIMARY KEY
-                        )''')
-        cursor.execute('''CREATE TABLE IF NOT EXISTS BlackListMail (
-                            mail TEXT PRIMARY KEY
-                        )''')
-        cursor.execute('''CREATE TABLE IF NOT EXISTS Keys (
-                            Key TEXT NOT NULL,
-                            serverId TEXT NOT NULL
-                        )''')
         cursor.execute('''CREATE TABLE IF NOT EXISTS WebPanel (
-                            id TEXT NOT NULL,
-                            password TEXT NOT NULL,
-                            salt TEXT NOT NULL,
-                            serverId TEXT NOT NULL
-                        )''')
+                        id TEXT PRIMARY KEY,
+                        name TEXT NOT NULL,
+                        lastLogin TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )''')
+        cursor.execute('''CREATE TABLE IF NOT EXISTS AuthWhiteList (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        userId TEXT UNIQUE
+                    )''')
+        cursor.execute('''CREATE TABLE IF NOT EXISTS AuthBlackList (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        userId TEXT UNIQUE
+                    )''')
+        cursor.execute('''CREATE TABLE IF NOT EXISTS IpWhiteList (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        ip TEXT UNIQUE
+                    )''')
+        cursor.execute('''CREATE TABLE IF NOT EXISTS IpBlackList (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        ip TEXT UNIQUE
+                    )''')
+        
         cursor.execute('''CREATE TABLE IF NOT EXISTS ServerCustomLinks (
-                            serverId TEXT PRIMARY KEY,
-                            customLink TEXT UNIQUE NOT NULL,
-                            createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                            updatedAt TIMESTAMP,
-                            lastUsed TIMESTAMP,
-                            visitCount INTEGER DEFAULT 0
-                        )''')
+                        serverId TEXT PRIMARY KEY,
+                        customLink TEXT UNIQUE NOT NULL,
+                        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updatedAt TIMESTAMP,
+                        lastUsed TIMESTAMP,
+                        visitCount INTEGER DEFAULT 0
+                    )''')
         
         conn.commit()
         print(f"DB 생성 완료: {filePath}")
     except Exception as e:
         print(f"DB 생성 중 오류 발생: {e}")
-    finally:
-        if conn:
-            conn.close()
-            
-    # 메인 DB 생성 (ServerCustomLinks 테이블)
-    mainDbPath = os.path.join(config.DBFolderPath, 'main.db')
-    
-    if not os.path.exists(config.DBFolderPath):
-        os.makedirs(config.DBFolderPath)
-    
-    conn = None
-    try:
-        conn = sqlite3.connect(mainDbPath)
-        cursor = conn.cursor()
-        
-        # 고유 링크 테이블 생성
-        cursor.execute('''CREATE TABLE IF NOT EXISTS ServerCustomLinks (
-                            serverId TEXT PRIMARY KEY,
-                            customLink TEXT UNIQUE NOT NULL,
-                            createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                            updatedAt TIMESTAMP,
-                            lastUsed TIMESTAMP,
-                            visitCount INTEGER DEFAULT 0
-                        )''')
-        
-        conn.commit()
-        print(f"메인 DB 생성 완료: {mainDbPath}")
-    except Exception as e:
-        print(f"메인 DB 생성 중 오류 발생: {e}")
     finally:
         if conn:
             conn.close()
@@ -285,7 +249,7 @@ async def DeleteFromDB(tableType, field, value):
 async def GetItemsFromDB(tableType, field, page=0, limit=20):
     config = LoadConfig()
     
-    def items_generator(cursor):
+    def itemsGenerator(cursor):
         while True:
             batch = cursor.fetchmany(100) 
             if not batch:
@@ -337,11 +301,11 @@ async def SendEmbed(interaction: Interaction, title: str, description: str, colo
         else:
             await interaction.followup.send(embed=embed, ephemeral=ephemeral)
 
-async def ErrorEmbed(interaction: Interaction, error_message: str, view=None):
+async def ErrorEmbed(interaction: Interaction, errorMessage: str, view=None):
     await SendEmbed(
         interaction=interaction,
         title="오류 발생",
-        description=f"⚠️ **{error_message}**",
+        description=f"⚠️ **{errorMessage}**",
         color=Color.red(),
         ephemeral=True,
         view=view
@@ -354,7 +318,7 @@ async def CheckServerRegistration(interaction: Interaction):
     if not CheckServerDB(str(interaction.guild_id)):
         await ErrorEmbed(
             interaction=interaction,
-            error_message="등록되지 않은 서버입니다.\n`/등록` 명령어로 서버를 등록해주세요."
+            errorMessage="등록되지 않은 서버입니다.\n`/등록` 명령어로 서버를 등록해주세요."
         )
         return False
     return True
@@ -425,8 +389,29 @@ async def SendOwnerLogWebhook(title, description, color, fields=[], userInfo=Non
             return False
 
         webhook = SyncWebhook.from_url(config.ownerLogWebhook)
+        
+        if isinstance(color, list) or not isinstance(color, (int, discord.Colour, type(None))):
+            try:
+                if isinstance(color, list) and len(color) > 0:
+                    color = int(color[0])
+                elif isinstance(color, str):
+                    if color.startswith("0x"):
+                        color = int(color, 16)
+                    else:
+                        color = int(color)
+                else:
+                    color = 0x3498DB
+            except (ValueError, TypeError):
+                color = 0x3498DB
+        
+        emoji = '🔵'
+        if color == 0xFF0000 or (isinstance(color, discord.Colour) and color == discord.Color.red()):
+            emoji = '🔴'
+        elif color == 0x57F287 or (isinstance(color, discord.Colour) and color == discord.Color.green()):
+            emoji = '🟢'
+        
         embed = Embed(
-            title=f"{'🔴' if color == 0xFF0000 else '🟢' if color == 0x57F287 else '🔵' if color == 0x3498DB else ''} {title}",
+            title=f"{emoji} {title}",
             description=description,
             color=color,
             timestamp=datetime.now(pytz.timezone("Asia/Seoul"))
@@ -477,7 +462,7 @@ def CheckIsWhiteOrBlacklisted(tableType, field, value, conn=None):
     cursor.execute(f"SELECT * FROM {tableType} WHERE {field} = ?", (value,))
     return cursor.fetchone() is not None
 
-async def RefreshToken(refresh_token, session):
+async def RefreshToken(refreshToken, session):
     url = "https://discord.com/api/oauth2/token"
     
     config = LoadConfig()
@@ -486,7 +471,7 @@ async def RefreshToken(refresh_token, session):
         "client_id": config.clientId,
         "client_secret": config.clientSecret,
         "grant_type": "refresh_token",
-        "refresh_token": refresh_token
+        "refresh_token": refreshToken
     }
     headers = {
         "Content-Type": "application/x-www-form-urlencoded"
@@ -495,50 +480,50 @@ async def RefreshToken(refresh_token, session):
     try:
         async with session.post(url, data=data, headers=headers) as response:
             if response.status == 200:
-                json_response = await response.json()
-                new_refresh_token = json_response.get("refresh_token")
+                jsonResponse = await response.json()
+                newRefreshToken = jsonResponse.get("refresh_token")
                 
-                if new_refresh_token and new_refresh_token != refresh_token:
+                if newRefreshToken and newRefreshToken != refreshToken:
                     try:
-                        await UpdateRefreshToken(refresh_token, new_refresh_token)
+                        await UpdateRefreshToken(refreshToken, newRefreshToken)
                     except Exception as e:
                         pass
                 
-                return json_response
+                return jsonResponse
             else:
                 return {}
     except:
         return {}
 
-async def UpdateRefreshToken(old_token, new_token):
+async def UpdateRefreshToken(oldToken, newToken):
     config = LoadConfig()
     if not os.path.exists(config.DBFolderPath):
         return
     
-    db_files = [f for f in os.listdir(config.DBFolderPath) if f.endswith('.db')]
+    dbFiles = [f for f in os.listdir(config.DBFolderPath) if f.endswith('.db')]
     
-    for db_file in db_files:
-        db_path = os.path.join(config.DBFolderPath, db_file)
+    for dbFile in dbFiles:
+        dbPath = os.path.join(config.DBFolderPath, dbFile)
         try:
-            conn = sqlite3.connect(db_path)
+            conn = sqlite3.connect(dbPath)
             cursor = conn.cursor()
             cursor.execute("UPDATE Users SET refreshToken = ? WHERE refreshToken = ?", 
-                          (new_token, old_token))
+                          (newToken, oldToken))
             conn.commit()
             conn.close()
         except Exception as e:
-            print(f"DB {db_file} 업데이트 중 오류: {str(e)}")
+            print(f"DB {dbFile} 업데이트 중 오류: {str(e)}")
 
 async def FetchBytesFromUrl(url: str) -> bytes:
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as res:
             return await res.read()
 
-def RunDBQuery(query_func):
+def RunDBQuery(queryFunc):
     try:
-        return query_func()
+        return queryFunc()
     except Exception as e:
         print(f"DB 쿼리 실행 중 오류: {str(e)}")
         raise e
 
-# V1.3.4
+# V1.5.1
