@@ -89,10 +89,48 @@ def GenDB():
                             salt TEXT NOT NULL,
                             serverId TEXT NOT NULL
                         )''')
+        cursor.execute('''CREATE TABLE IF NOT EXISTS ServerCustomLinks (
+                            serverId TEXT PRIMARY KEY,
+                            customLink TEXT UNIQUE NOT NULL,
+                            createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                            updatedAt TIMESTAMP,
+                            lastUsed TIMESTAMP,
+                            visitCount INTEGER DEFAULT 0
+                        )''')
+        
         conn.commit()
         print(f"DB 생성 완료: {filePath}")
     except Exception as e:
         print(f"DB 생성 중 오류 발생: {e}")
+    finally:
+        if conn:
+            conn.close()
+            
+    # 메인 DB 생성 (ServerCustomLinks 테이블)
+    mainDbPath = os.path.join(config.DBFolderPath, 'main.db')
+    
+    if not os.path.exists(config.DBFolderPath):
+        os.makedirs(config.DBFolderPath)
+    
+    conn = None
+    try:
+        conn = sqlite3.connect(mainDbPath)
+        cursor = conn.cursor()
+        
+        # 고유 링크 테이블 생성
+        cursor.execute('''CREATE TABLE IF NOT EXISTS ServerCustomLinks (
+                            serverId TEXT PRIMARY KEY,
+                            customLink TEXT UNIQUE NOT NULL,
+                            createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                            updatedAt TIMESTAMP,
+                            lastUsed TIMESTAMP,
+                            visitCount INTEGER DEFAULT 0
+                        )''')
+        
+        conn.commit()
+        print(f"메인 DB 생성 완료: {mainDbPath}")
+    except Exception as e:
+        print(f"메인 DB 생성 중 오류 발생: {e}")
     finally:
         if conn:
             conn.close()

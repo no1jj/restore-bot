@@ -6,6 +6,7 @@ from datetime import datetime
 import os
 import sqlite3
 from . import helper
+import re
 
 class SettingsView(View):
     def __init__(self, serverId: str, interaction: Interaction):
@@ -51,6 +52,19 @@ class SettingsSelect(Select):
             
             conn.close()
             
+            mainDbPath = os.path.join(helper.LoadConfig().DBPath)
+            mainConn = sqlite3.connect(mainDbPath)
+            mainCursor = mainConn.cursor()
+            
+            mainCursor.execute("""
+                SELECT customLink FROM ServerCustomLinks WHERE serverId = ?
+            """, [serverId])
+            
+            linkInfo = mainCursor.fetchone()
+            mainConn.close()
+            
+            link_status = "설정됨" if linkInfo else "설정되지 않음"
+            
             options = [
                 SelectOption(
                     label="🌐 IP 기록 여부",
@@ -81,6 +95,11 @@ class SettingsSelect(Select):
                     label="🛡️ VPN 차단 설정",
                     value="vpn차단",
                     description=f"{'활성화' if settings[5] == 1 else '비활성화'}"
+                ),
+                SelectOption(
+                    label="🔗 고유 링크 설정",
+                    value="고유 링크",
+                    description=f"{link_status}"
                 )
             ]
         except Exception as e:
@@ -114,6 +133,11 @@ class SettingsSelect(Select):
                     label="🛡️ VPN 차단 설정",
                     value="vpn차단",
                     description="설정을 불러올 수 없습니다"
+                ),
+                SelectOption(
+                    label="🔗 고유 링크 설정",
+                    value="고유 링크",
+                    description="설정을 불러올 수 없습니다"
                 )
             ]
         
@@ -138,6 +162,9 @@ class SettingsSelect(Select):
             await interaction.response.edit_message(view=view)
         elif selected == "vpn차단":
             view = OnOffView(interaction.guild_id, selected)
+            await interaction.response.edit_message(view=view)
+        elif selected == "고유 링크":
+            view = CustomLinkView(interaction.guild_id)
             await interaction.response.edit_message(view=view)
 
 class OnOffView(View):
@@ -279,6 +306,123 @@ class BackToSettingsButton(Button):
 
     async def callback(self, interaction: Interaction):
         view = SettingsView(self.serverId, interaction)
-        await interaction.response.edit_message(view=view) 
+        await interaction.response.edit_message(view=view)
 
-# V1.3.2
+class CustomLinkView(View):
+    def __init__(self, serverId: str):
+        super().__init__(timeout=None)
+        self.serverId = serverId
+        self.add_item(LinkSettingButton(serverId))
+        self.add_item(BackToSettingsButton(serverId))
+
+class LinkSettingButton(Button):
+    def __init__(self, serverId: str):
+        self.serverId = serverId
+        super().__init__(label="고유 링크 설정", style=discord.ButtonStyle.primary)
+
+    async def callback(self, interaction: Interaction):
+        modal = CustomLinkInput(self.serverId)
+        await interaction.response.send_modal(modal)
+
+class CustomLinkInput(discord.ui.Modal, title="고유 링크 설정"):
+    def __init__(self, serverId: str):
+        super().__init__()
+        self.serverId = serverId
+        
+        try:
+            mainDbPath = os.path.join(helper.LoadConfig().DBPath)
+            conn = sqlite3.connect(mainDbPath)
+            cursor = conn.cursor()
+            
+            cursor.execute("""
+                SELECT customLink FROM ServerCustomLinks WHERE serverId = ?
+            """, [serverId])
+            
+            linkInfo = cursor.fetchone()
+            conn.close()
+            
+            current_link = linkInfo[0] if linkInfo else ""
+        except:
+            current_link = ""
+        
+        self.customLink = discord.ui.TextInput(
+            label="고유 링크", 
+            placeholder="영문, 숫자, 하이픈, 언더스코어만 사용 가능합니다. (3~30자)",
+            min_length=3,
+            max_length=30,
+            default=current_link
+        )
+        
+        self.add_item(self.customLink)
+
+    async def on_submit(self, interaction: Interaction):
+        try:
+            customLink = self.customLink.value.strip()
+            
+            if not customLink:
+                await helper.ErrorEmbed(interaction, "고유 링크를 입력해주세요.")
+                return
+                
+            if not re.match(r'^[a-zA-Z0-9\-_]+$', customLink):
+                await helper.ErrorEmbed(interaction, "링크는 영문, 숫자, 하이픈, 언더스코어만 사용 가능합니다.")
+                return
+            
+            mainDbPath = os.path.join(helper.LoadConfig().DBPath)
+            conn = sqlite3.connect(mainDbPath)
+            cursor = conn.cursor()
+            
+            cursor.execute("""
+                SELECT customLink FROM ServerCustomLinks 
+                WHERE customLink = ? AND serverId != ?
+            """, [customLink, self.serverId])
+            
+            existingLink = cursor.fetchone()
+            if existingLink:
+                conn.close()
+                await helper.ErrorEmbed(interaction, "이미 사용 중인 링크입니다.")
+                return
+            
+            cursor.execute("""
+                SELECT customLink FROM ServerCustomLinks 
+                WHERE serverId = ?
+            """, [self.serverId])
+            
+            myLink = cursor.fetchone()
+            
+            if myLink:
+                cursor.execute("""
+                    UPDATE ServerCustomLinks 
+                    SET customLink = ?, updatedAt = datetime('now') 
+                    WHERE serverId = ?
+                """, [customLink, self.serverId])
+            else:
+                cursor.execute("""
+                    INSERT INTO ServerCustomLinks 
+                    (serverId, customLink, createdAt, visitCount) 
+                    VALUES (?, ?, datetime('now'), 0)
+                """, [self.serverId, customLink])
+            
+            conn.commit()
+            conn.close()
+            
+            domain = helper.LoadConfig().domain
+            fullUrl = f"{domain}/j/{customLink}"
+            
+            await helper.SendEmbed(
+                interaction=interaction, 
+                title="✅ 고유 링크 설정 완료", 
+                description=f"고유 링크가 **{customLink}**로 설정되었습니다.\n**링크:** `{fullUrl}`", 
+                color=Color.green()
+            )
+            
+            if not interaction.response.is_done():
+                view = SettingsView(self.serverId, interaction)
+                await interaction.response.edit_message(view=view)
+            else:
+                view = SettingsView(self.serverId, interaction)
+                await interaction.message.edit(view=view)
+            
+        except Exception as e:
+            await helper.ErrorEmbed(interaction, f"오류가 발생했습니다.\n\n{str(e)}")
+
+#V1.5

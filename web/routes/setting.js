@@ -3,6 +3,10 @@ const router = express.Router();
 const csrf = require('csurf');
 const { check, validationResult } = require('express-validator');
 const settingController = require('../controllers/settingController');
+const infoRouter = require('./info');
+const setupRouter = require('./setup');
+const customLinkRouter = require('./customLink');
+const linkPageController = require('../controllers/linkPageController');
 
 const csrfProtection = csrf({ cookie: false });
 
@@ -44,6 +48,12 @@ router.post('/update', authMiddleware, csrfProtection, settingsValidation, (req,
 
 router.get('/stats', authMiddleware, settingController.getServerStats);
 
+router.use('/info', infoRouter);
+router.use('/setup', setupRouter);
+router.use('/link', customLinkRouter);
+
+router.get('/link_page', authMiddleware, csrfProtection, linkPageController.renderLinkPage);
+
 module.exports = router; 
 
-// V1.4.2
+// V1.5

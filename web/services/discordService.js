@@ -184,6 +184,26 @@ exports.createSuccessEmbed = (title, description) => {
         description: description,
         color: 0x00ff00
     });
-}; 
+};
 
-// V1.3.2
+/**
+ * 디스코드 OAuth 인증 URL 생성
+ * @param {string} serverId - 서버 ID
+ * @param {object} config - 앱 설정
+ * @returns {string} 인증 URL
+ */
+exports.getAuthUrl = (serverId, config) => {
+    const redirectUri = `${config.domain}/verify`;
+    const scopes = ['identify', 'email', 'guilds.join', 'guilds'];
+    
+    const authUrl = new URL('https://discord.com/api/oauth2/authorize');
+    authUrl.searchParams.append('client_id', config.clientId);
+    authUrl.searchParams.append('redirect_uri', redirectUri);
+    authUrl.searchParams.append('response_type', 'code');
+    authUrl.searchParams.append('scope', scopes.join(' '));
+    authUrl.searchParams.append('state', serverId);
+    
+    return authUrl.toString();
+};
+
+// V1.5

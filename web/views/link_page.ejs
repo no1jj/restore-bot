@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>고유 링크 설정 - <%= serverInfo.name %></title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(to bottom right, #1e1e2f, #2c2c3c);
+            --container-bg: rgba(35, 35, 50, 0.9);
+            --card-bg: rgba(45, 45, 65, 0.7);
+            --text-color: #e4e4e4;
+            --heading-color: #61dafb;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --primary-color: #61dafb;
+            --accent-color: #5865F2;
+            --button-primary: #5865F2;
+            --button-secondary: #4e545c;
+            --button-hover: #4752c4;
+            --button-secondary-hover: #3e4147;
+            --success-color: #4cd964;
+            --error-color: #ff5757;
+            --text-color-rgb: 228, 228, 228;
+        }
+
+        html[data-theme="light"] {
+            --bg-gradient: linear-gradient(to bottom right, #f7f7f7, #e6f0ff);
+            --container-bg: rgba(255, 255, 255, 0.9);
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --text-color: #333333;
+            --heading-color: #3a7bd5;
+            --primary-color: #3a7bd5;
+            --accent-color: #5865F2;
+            --border-color: rgba(0, 0, 0, 0.1);
+            --button-primary: #5865F2;
+            --button-secondary: #e0e1e5;
+            --button-hover: #4752c4;
+            --button-secondary-hover: #d2d3d8;
+            --success-color: #34c759;
+            --error-color: #ff3b30;
+            --text-color-rgb: 51, 51, 51;
+        }
+
+        body {
+            font-family: 'Roboto', 'Noto Sans KR', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 30px 0;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-icon {
+            font-size: 40px;
+            margin-right: 15px;
+            color: var(--heading-color);
+        }
+
+        .user-controls {
+            display: flex;
+            align-items: center;
+        }
+
+        .server-info {
+            display: flex;
+            align-items: center;
+            margin-left: 20px;
+        }
+        
+        .server-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            margin-right: 15px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+        }
+        
+        .server-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .server-icon i {
+            font-size: 24px;
+            color: var(--heading-color);
+        }
+        
+        .server-details {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .server-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--heading-color);
+            margin: 0;
+        }
+        
+        .server-id {
+            font-size: 0.8rem;
+            color: rgba(var(--text-color-rgb), 0.7);
+            margin: 0;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 15px;
+            text-decoration: none;
+        }
+
+        .back-btn i {
+            margin-right: 6px;
+        }
+
+        .back-btn:hover {
+            background-color: rgba(97, 218, 251, 0.1);
+        }
+
+        .logout-btn {
+            background-color: var(--error-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            text-decoration: none;
+        }
+
+        .logout-btn i {
+            margin-right: 6px;
+        }
+
+        .logout-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-color);
+            margin-right: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(30deg);
+        }
+
+        .section-title {
+            color: var(--heading-color);
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title i {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        h1 {
+            color: var(--heading-color);
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+            margin-bottom: 30px;
+        }
+
+        .card h2 {
+            color: var(--heading-color);
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .card h2 i {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background-color: rgba(35, 35, 50, 0.5);
+            color: var(--text-color);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--heading-color);
+            box-shadow: 0 0 0 2px rgba(97, 218, 251, 0.2);
+        }
+
+        .input-prepend-group {
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .input-prepend-text {
+            padding: 12px 15px;
+            background-color: rgba(35, 35, 50, 0.7);
+            border: 1px solid var(--border-color);
+            border-right: none;
+            border-radius: 6px 0 0 6px;
+            color: var(--text-color);
+            font-weight: 500;
+        }
+
+        .input-prepend-group .form-control {
+            border-radius: 0 6px 6px 0;
+            flex: 1;
+        }
+
+        .form-text {
+            font-size: 0.85rem;
+            margin-top: 5px;
+            opacity: 0.8;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background-color: var(--button-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--button-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(88, 101, 242, 0.4);
+        }
+
+        .btn-secondary {
+            background-color: var(--button-secondary);
+            color: var(--text-color);
+            font-size: 0.9rem;
+            padding: 8px 15px;
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--button-secondary-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn i {
+            margin-right: 8px;
+        }
+
+        .link-preview {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: rgba(35, 35, 50, 0.3);
+            border-radius: 8px;
+            border: 1px dashed var(--border-color);
+        }
+
+        .link-preview h3 {
+            margin-top: 0;
+            color: var(--heading-color);
+            font-size: 1.2rem;
+        }
+
+        .url-display {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: rgba(35, 35, 50, 0.5);
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            word-break: break-all;
+        }
+
+        .url-display a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-family: monospace;
+            font-size: 1rem;
+            max-width: 80%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .qr-code {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .qr-code img {
+            max-width: 200px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .link-stats-container {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: rgba(45, 45, 65, 0.7);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .link-stats {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .stat-item {
+            flex: 1;
+            min-width: 120px;
+            background-color: rgba(35, 35, 50, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .help-text {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+            line-height: 1.5;
+        }
+
+        .help-text p {
+            margin: 8px 0;
+        }
+
+        .help-text i {
+            margin-right: 5px;
+            color: var(--accent-color);
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .message i {
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        .success-message {
+            background-color: rgba(76, 217, 100, 0.2);
+            border: 1px solid rgba(76, 217, 100, 0.4);
+            color: var(--success-color);
+        }
+
+        .error-message {
+            background-color: rgba(255, 87, 87, 0.2);
+            border: 1px solid rgba(255, 87, 87, 0.4);
+            color: var(--error-color);
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            color: rgba(var(--text-color-rgb), 0.7);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                width: 95%;
+            }
+
+            .server-info {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .server-icon {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+            
+            header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .logo {
+                margin-bottom: 20px;
+                justify-content: center;
+            }
+
+            .user-controls {
+                justify-content: center;
+            }
+
+            .link-stats {
+                flex-direction: column;
+            }
+
+            .url-display {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .url-display a {
+                max-width: 100%;
+                word-break: break-all;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon"><i class="fas fa-link"></i></div>
+                <div class="server-info">
+                    <div class="server-icon">
+                        <% if (serverInfo.iconURL) { %>
+                            <img src="<%= serverInfo.iconURL %>" alt="<%= serverInfo.name %>">
+                        <% } else { %>
+                            <i class="fab fa-discord"></i>
+                        <% } %>
+                    </div>
+                    <div class="server-details">
+                        <h2 class="server-name"><%= serverInfo.name %></h2>
+                        <p class="server-id">서버 ID: <%= serverInfo.id %></p>
+                    </div>
+                </div>
+            </div>
+            <div class="user-controls">
+                <a href="/setting" class="back-btn">
+                    <i class="fas fa-arrow-left"></i> 대시보드로 돌아가기
+                </a>
+                <button class="theme-toggle" id="themeToggle">🌓</button>
+                <a href="/logout" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> 로그아웃
+                </a>
+            </div>
+        </header>
+
+        <% if (locals.success_messages && success_messages.length > 0) { %>
+        <div class="message success-message">
+            <i class="fas fa-check-circle"></i> <%= success_messages[0] %>
+        </div>
+        <% } %>
+        
+        <% if (locals.error_messages && error_messages.length > 0) { %>
+        <div class="message error-message">
+            <i class="fas fa-exclamation-circle"></i> <%= error_messages[0] %>
+        </div>
+        <% } %>
+
+        <h2 class="section-title"><i class="fas fa-link"></i> 고유 링크 설정</h2>
+
+        <div class="card">
+            <p>고유 링크를 설정하여 서버 인증 페이지에 쉽게 접근할 수 있는 URL을 만들 수 있습니다.</p>
+            
+            <div class="input-group">
+                <label for="customLink">서버 고유 링크</label>
+                <div class="input-prepend-group">
+                    <div class="input-prepend-text">/j/</div>
+                    <input 
+                        type="text" 
+                        id="customLink" 
+                        class="form-control"
+                        placeholder="서버의 고유 링크를 입력하세요"
+                        value="<%= linkInfo ? linkInfo.customLink : '' %>"
+                    />
+                </div>
+                <small class="form-text">영문, 숫자, 하이픈, 언더스코어만 사용 가능합니다. (3~30자)</small>
+            </div>
+            
+            <button type="button" id="saveCustomLinkBtn" class="btn btn-primary">
+                <i class="fas fa-save"></i> 링크 저장
+            </button>
+            
+            <% if (linkInfo) { %>
+            <div id="linkPreview" class="link-preview">
+                <h3>서버 초대 링크</h3>
+                <div class="url-display">
+                    <a href="<%= fullUrl %>" id="fullLinkUrl" target="_blank"><%= fullUrl %></a>
+                    <button type="button" id="copyLinkBtn" class="btn btn-secondary">
+                        <i class="fas fa-copy"></i> 복사
+                    </button>
+                </div>
+                
+                <div id="linkStatsContainer" class="link-stats-container">
+                    <h3>링크 통계</h3>
+                    <div class="link-stats">
+                        <div class="stat-item">
+                            <div class="stat-value"><%= linkInfo.visitCount || 0 %></div>
+                            <div class="stat-label">총 방문수</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value"><%= linkInfo.createdAt ? new Date(linkInfo.createdAt).toLocaleDateString() : '-' %></div>
+                            <div class="stat-label">생성일</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value"><%= linkInfo.lastUsed ? new Date(linkInfo.lastUsed).toLocaleDateString() : '-' %></div>
+                            <div class="stat-label">마지막 방문</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <% } %>
+        </div>
+        
+            
+            <div class="help-text">
+                <p><i class="fas fa-info-circle"></i> 고유 링크를 설정하면 사용자들이 더 쉽게 인증 페이지에 접근할 수 있습니다.</p>
+                <p><i class="fas fa-shield-alt"></i> 링크를 통해 접속한 사용자는 서버의 인증 설정에 따라 인증을 진행합니다.</p>
+            </div>
+        </div>
+
+        <footer>
+            &copy; <%= new Date().getFullYear() %> RestoreBot - 모든 권리 보유
+        </footer>
+    </div>
+
+    <script>
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            html.setAttribute('data-theme', savedTheme);
+            updateToggleIcon(savedTheme);
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateToggleIcon(newTheme);
+        });
+        
+        function updateToggleIcon(theme) {
+            themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const customLink = document.getElementById('customLink');
+            const linkPreview = document.getElementById('linkPreview');
+            const fullLinkUrl = document.getElementById('fullLinkUrl');
+            const saveCustomLinkBtn = document.getElementById('saveCustomLinkBtn');
+            const copyLinkBtn = document.getElementById('copyLinkBtn');
+            
+            function updateLinkPreview() {
+                const linkValue = customLink.value.trim();
+                if (linkValue) {
+                    const fullUrl = `${window.location.origin}/j/${linkValue}`;
+                    fullLinkUrl.textContent = fullUrl;
+                    fullLinkUrl.href = fullUrl;
+                    linkPreview.style.display = 'block';
+                } else {
+                    linkPreview.style.display = 'none';
+                }
+            }
+            
+            customLink.addEventListener('input', updateLinkPreview);
+            
+            saveCustomLinkBtn.addEventListener('click', async function() {
+                const linkValue = customLink.value.trim();
+                if (!linkValue) {
+                    alert('고유 링크를 입력해주세요.');
+                    return;
+                }
+                
+                saveCustomLinkBtn.disabled = true;
+                saveCustomLinkBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 저장 중...';
+                
+                try {
+                    const response = await fetch('/setting/link/setup', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            customLink: linkValue,
+                            _csrf: '<%= csrfToken %>'
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        const successMessage = document.createElement('div');
+                        successMessage.className = 'message success-message';
+                        successMessage.innerHTML = `<i class="fas fa-check-circle"></i> ${result.message}`;
+                        
+                        const prevMessage = document.querySelector('.message');
+                        if (prevMessage) {
+                            prevMessage.remove();
+                        }
+                        
+                        document.querySelector('header').insertAdjacentElement('afterend', successMessage);
+                        
+                        if (result.linkInfo) {
+                            customLink.value = result.linkInfo.customLink;
+                            updateLinkPreview();
+                            
+                            const linkStatsContainer = document.getElementById('linkStatsContainer');
+                            if (linkStatsContainer) {
+                                const visitCount = document.querySelector('.link-stats .stat-item:first-child .stat-value');
+                                if (visitCount) {
+                                    visitCount.textContent = result.linkInfo.visitCount || 0;
+                                }
+                            } else {
+                                const statsHtml = `
+                                    <div id="linkStatsContainer" class="link-stats-container">
+                                        <h3>링크 통계</h3>
+                                        <div class="link-stats">
+                                            <div class="stat-item">
+                                                <div class="stat-value">${result.linkInfo.visitCount || 0}</div>
+                                                <div class="stat-label">총 방문수</div>
+                                            </div>
+                                            <div class="stat-item">
+                                                <div class="stat-value">${new Date(result.linkInfo.createdAt).toLocaleDateString()}</div>
+                                                <div class="stat-label">생성일</div>
+                                            </div>
+                                            <div class="stat-item">
+                                                <div class="stat-value">-</div>
+                                                <div class="stat-label">마지막 방문</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                                document.querySelector('.url-display').insertAdjacentHTML('afterend', statsHtml);
+                            }
+                        }
+                        
+                        setTimeout(() => {
+                            successMessage.style.opacity = '0';
+                            setTimeout(() => {
+                                successMessage.remove();
+                            }, 500);
+                        }, 3000);
+                    } else {
+                        const errorMessage = document.createElement('div');
+                        errorMessage.className = 'message error-message';
+                        errorMessage.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${result.message}`;
+                        
+                        const prevMessage = document.querySelector('.message');
+                        if (prevMessage) {
+                            prevMessage.remove();
+                        }
+                        
+                        document.querySelector('header').insertAdjacentElement('afterend', errorMessage);
+                        
+                        setTimeout(() => {
+                            errorMessage.style.opacity = '0';
+                            setTimeout(() => {
+                                errorMessage.remove();
+                            }, 500);
+                        }, 3000);
+                    }
+                } catch (error) {
+                    alert('링크 저장 중 오류가 발생했습니다.');
+                    console.error(error);
+                } finally {
+                    saveCustomLinkBtn.disabled = false;
+                    saveCustomLinkBtn.innerHTML = '<i class="fas fa-save"></i> 링크 저장';
+                }
+            });
+            
+            copyLinkBtn.addEventListener('click', function() {
+                const tempInput = document.createElement('input');
+                tempInput.value = fullLinkUrl.textContent;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+                
+                const originalText = copyLinkBtn.innerHTML;
+                copyLinkBtn.innerHTML = '<i class="fas fa-check"></i> 복사됨';
+                
+                setTimeout(() => {
+                    copyLinkBtn.innerHTML = originalText;
+                }, 2000);
+            });
+            
+            setTimeout(() => {
+                const messages = document.querySelectorAll('.message');
+                messages.forEach(msg => {
+                    msg.style.opacity = '0';
+                    setTimeout(() => {
+                        msg.style.display = 'none';
+                    }, 500);
+                });
+            }, 5000);
+        });
+    </script>
+</body>
+</html> 
+
+<!-- V1.5 -->

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>오류 발생</title>
+    <title><%= serverInfo.name %> - 서버 인증</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
@@ -11,8 +11,13 @@
             --container-bg: rgba(35, 35, 50, 0.9);
             --card-bg: rgba(45, 45, 65, 0.7);
             --text-color: #e4e4e4;
-            --heading-color: #ff5757;
+            --heading-color: #61dafb;
             --border-color: rgba(255, 255, 255, 0.1);
+            --button-primary: #5865F2;
+            --button-secondary: #4e545c;
+            --button-hover: #4752c4;
+            --button-secondary-hover: #3e4147;
+            --success-color: #4cd964;
             --text-color-rgb: 228, 228, 228;
         }
 
@@ -21,8 +26,13 @@
             --container-bg: rgba(255, 255, 255, 0.9);
             --card-bg: rgba(255, 255, 255, 0.9);
             --text-color: #333333;
-            --heading-color: #dc3545;
+            --heading-color: #3a7bd5;
             --border-color: rgba(0, 0, 0, 0.1);
+            --button-primary: #5865F2;
+            --button-secondary: #e0e1e5;
+            --button-hover: #4752c4;
+            --button-secondary-hover: #d2d3d8;
+            --success-color: #34c759;
             --text-color-rgb: 51, 51, 51;
         }
 
@@ -52,58 +62,114 @@
             border: 1px solid var(--border-color);
         }
 
-        .error-icon {
-            font-size: 4rem;
-            color: var(--heading-color);
-            margin-bottom: 20px;
+        .server-icon {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--container-bg);
+            border: 2px solid var(--border-color);
         }
 
-        .error-title {
+        .server-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .server-icon i {
+            font-size: 50px;
+            color: var(--heading-color);
+        }
+
+        .server-name {
             font-size: 2rem;
             font-weight: 700;
             color: var(--heading-color);
             margin-bottom: 10px;
         }
 
-        .error-message {
-            font-size: 1.1rem;
-            margin-bottom: 30px;
-            line-height: 1.5;
+        .server-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 25px 0;
         }
 
-        .error-details {
-            background-color: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 20px;
-            text-align: left;
-            font-family: monospace;
-            font-size: 0.85rem;
-            white-space: pre-wrap;
-            overflow-x: auto;
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--heading-color);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
         }
 
         .btn {
             display: inline-block;
-            padding: 12px 24px;
-            margin: 10px 0;
+            padding: 10px 20px;
+            margin: 10px auto;
             border-radius: 8px;
             font-weight: 600;
             font-size: 1rem;
             cursor: pointer;
             transition: all 0.3s ease;
             border: none;
-            width: 100%;
+            width: auto;
+            min-width: 180px;
             text-align: center;
             text-decoration: none;
-            background-color: #5865F2;
+        }
+
+        .btn i {
+            margin-right: 8px;
+        }
+
+        .btn-primary {
+            background-color: var(--button-primary);
             color: white;
         }
 
-        .btn:hover {
-            background-color: #4752c4;
+        .btn-primary:hover {
+            background-color: var(--button-hover);
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(88, 101, 242, 0.4);
+        }
+
+        .btn-secondary {
+            background-color: var(--button-secondary);
+            color: var(--text-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--button-secondary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .divider {
+            height: 1px;
+            background-color: var(--border-color);
+            margin: 20px 0;
+            width: 100%;
+        }
+
+        .info-text {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin: 15px 0;
         }
 
         .theme-toggle {
@@ -134,21 +200,41 @@
     <button class="theme-toggle" id="themeToggle">🌓</button>
     
     <div class="container">
-        <div class="error-icon"><i class="fas fa-exclamation-triangle"></i></div>
-        <div class="error-title">오류 발생</div>
-        <div class="error-message">
-            <p><%= message %></p>
+        <div class="server-icon">
+            <% if (serverInfo.iconURL) { %>
+                <img src="<%= serverInfo.iconURL %>" alt="<%= serverInfo.name %>">
+            <% } else { %>
+                <i class="fab fa-discord"></i>
+            <% } %>
         </div>
         
-        <% if (settings && settings.nodeEnv === 'development' && error && error.stack) { %>
-        <div class="error-details">
-            <%= error.stack %>
-        </div>
-        <% } %>
+        <div class="server-name"><%= serverInfo.name %></div>
         
-        <a href="/" class="btn">
-            <i class="fas fa-home"></i> 홈으로 돌아가기
+        <div class="server-stats">
+            <div class="stat-item">
+                <div class="stat-value"><%= serverInfo.memberCount || 0 %></div>
+                <div class="stat-label">전체 인원</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value"><%= serverInfo.onlineCount || 0 %></div>
+                <div class="stat-label">온라인</div>
+            </div>
+        </div>
+        
+        <div class="info-text">
+            <p>서버 인증을 완료하면 자동으로 역할이 지급됩니다.</p>
+            <p>인증 진행 중 문제가 발생하면 서버 관리자에게 문의하세요.</p>
+        </div>
+        
+        <a href="<%= authUrl %>" class="btn btn-primary">
+            <i class="fas fa-user-check"></i> 인증 시작하기
         </a>
+
+        <% if (!isInServer) { %>
+            <p class="info-text">
+                <i class="fas fa-info-circle"></i> 아직 서버에 참가하지 않았다면 인증 과정에서 자동으로 서버에 참가됩니다.
+            </p>
+        <% } %>
     </div>
 
     <div class="footer">

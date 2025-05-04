@@ -53,6 +53,20 @@ async def CheckInfo(interaction: Interaction):
         info = cursor.fetchone()
         cursor.execute("SELECT loggingIp, loggingMail, loggingChannelId, roleId, useCaptcha, blockVpn FROM Settings")
         settings = cursor.fetchone()
+        
+        mainDbPath = os.path.join(config.DBPath)
+        mainConn = sqlite3.connect(mainDbPath)
+        mainCursor = mainConn.cursor()
+        
+        mainCursor.execute("""
+            SELECT customLink, createdAt, lastUsed, visitCount 
+            FROM ServerCustomLinks 
+            WHERE serverId = ?
+        """, [str(interaction.guild_id)])
+        
+        linkInfo = mainCursor.fetchone()
+        mainConn.close()
+        
         conn.close()
         
         channelText = '설정 안됨'
@@ -65,12 +79,24 @@ async def CheckInfo(interaction: Interaction):
             role = interaction.guild.get_role(int(settings[3]))
             roleText = role.name if role else "역할을 찾을 수 없음"
         
+        linkText = "설정되지 않음"
+        linkStatText = ""
+        if linkInfo:
+            domain = config.domain
+            linkText = f"{domain}/j/{linkInfo[0]}"
+            
+            lastUsed = "없음" if not linkInfo[2] else linkInfo[2]
+            linkStatText = f"\n🔸 **방문 횟수**: `{linkInfo[3]}회`\n🔸 **생성일**: `{linkInfo[1]}`\n🔸 **마지막 방문**: `{lastUsed}`"
+        
         description = f"""
 ## 🏢 **서버 정보**
 🔹 **서버 이름**: `{info[0]}`
 🔹 **서버 ID**: `{info[1]}`
 🔹 **등록 시간**: `{info[2]}`
 🔹 **복구 키**: `{info[3]}`
+
+## 🔗 **고유 링크 정보**
+🔹 **링크 주소**: `{linkText}`{linkStatText}
 
 ## ⚙️ **설정 정보**
 🔸 **IP 기록 여부**: {'✅' if settings[0] else '❌'}
@@ -273,4 +299,4 @@ if __name__ == "__main__":
     helper.GenDB()
     bot.run(config.botToken)
 
-# V1.3.4
+#V1.5

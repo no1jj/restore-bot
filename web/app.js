@@ -6,6 +6,8 @@ const session = require('express-session');
 const csrf = require('csurf');
 const flash = require('connect-flash');
 const { check, validationResult } = require('express-validator');
+const sqlite3 = require('sqlite3').verbose();
+const { promisify } = require('util');
 
 const configPath = path.join(__dirname, '../config.json');
 const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
@@ -39,7 +41,8 @@ const csrfProtection = csrf({ cookie: false });
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMembers
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildPresences
     ]
 });
 
@@ -63,6 +66,9 @@ const loginRouter = require('./routes/login');
 const backupRouter = require('./routes/backup');
 const logsRouter = require('./routes/logs');
 const sendRouter = require('./routes/send');
+const customLinkRouter = require('./routes/customLink');
+const setupRouter = require('./routes/setup');
+const infoRouter = require('./routes/info');
 
 app.use('/', indexRouter);
 app.use('/verify', authRouter);
@@ -70,6 +76,10 @@ app.use('/setting', settingRouter);
 app.use('/setting/backup', backupRouter);
 app.use('/setting/logs', logsRouter);
 app.use('/setting/send', sendRouter);
+app.use('/setting/link', customLinkRouter);
+app.use('/setting/setup', setupRouter);
+app.use('/setting/info', infoRouter);
+app.use('/j', customLinkRouter);
 app.use('/', loginRouter);
 
 app.use((req, res) => {
@@ -99,4 +109,4 @@ app.listen(port, () => {
 
 module.exports = app; 
 
-// V1.4.2
+// V1.5

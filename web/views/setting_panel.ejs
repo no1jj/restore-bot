@@ -931,6 +931,80 @@
             font-weight: 600;
             color: var(--text-color);
         }
+
+        .input-prepend-group {
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .input-prepend-text {
+            padding: 10px 12px;
+            background-color: rgba(35, 35, 50, 0.7);
+            border: 1px solid var(--border-color);
+            border-right: none;
+            border-radius: 6px 0 0 6px;
+            color: var(--text-color);
+        }
+        
+        .input-prepend-group .form-control {
+            border-radius: 0 6px 6px 0;
+            flex: 1;
+        }
+
+        .error-notification {
+            color: #ff6b6b;
+            padding: 5px 10px;
+            margin-top: 5px;
+            border-left: 3px solid #ff6b6b;
+            background-color: rgba(255, 107, 107, 0.1);
+            font-size: 0.9rem;
+        }
+
+        .link-stats-container {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: rgba(45, 45, 65, 0.7);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .link-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .link-stats p {
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        .link-stats strong {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .link-stats i {
+            margin-right: 5px;
+            color: var(--accent-color);
+        }
+
+        .feature-list {
+            margin: 15px 0;
+        }
+
+        .feature-item {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .feature-item i {
+            color: var(--success-color);
+            margin-right: 10px;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
@@ -959,6 +1033,9 @@
                         </div>
                         <div class="side-menu-item" data-action="logs">
                             <i class="fas fa-history"></i> 로그 조회
+                        </div>
+                        <div class="side-menu-item" data-action="link">
+                            <i class="fas fa-link"></i> 고유 링크 설정
                         </div>
                         <div class="side-menu-item" data-action="backup">
                             <i class="fas fa-database"></i> 서버 백업/복구
@@ -1151,6 +1228,29 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="card">
+                        <h2><i class="fas fa-link"></i> 고유 링크</h2>
+                        
+                        <p>고유 링크는 사용자들이 서버 인증 페이지에 쉽게 접근할 수 있도록 도와주는 기능입니다.</p>
+                        <p>예시: <code>https://your-domain.com/j/your-server-custon-link</code></p>
+                        
+                        <div class="feature-list">
+                            <div class="feature-item">
+                                <i class="fas fa-check-circle"></i> 서버별 커스텀 URL 생성
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-check-circle"></i> QR 코드 자동 생성
+                            </div>
+                            <div class="feature-item">
+                                <i class="fas fa-check-circle"></i> 링크 방문 통계 추적
+                            </div>
+                        </div>
+                        
+                        <a href="/setting/link_page" class="btn btn-primary" style="margin-top: 15px;">
+                            <i class="fas fa-cog"></i> 고유 링크 관리
+                        </a>
+                    </div>
                 </div>
 
                 <div class="form-actions">
@@ -1300,6 +1400,9 @@
                         break;
                     case 'logs':
                         window.location.href = '/setting/logs';
+                        break;
+                    case 'link':
+                        window.location.href = '/setting/link_page';
                         break;
                     case 'backup':
                         window.location.href = '/setting/backup';
@@ -1542,4 +1645,4 @@
 </body>
 </html> 
 
-<!-- V1.4.2 -->
+<!-- V1.5 -->
