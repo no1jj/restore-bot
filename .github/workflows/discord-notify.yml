@@ -4,14 +4,10 @@ on:
   push:
     branches: ["*"]
     tags: ["v*"]
-    paths:
-      - 'src/**'
-      - 'docs/**'
+    # paths 제한 삭제
   pull_request:
     types: [opened, closed, labeled, unlabeled]
-    paths:
-      - 'src/**'
-      - 'docs/**'
+    # paths 제한 삭제
   release:
     types: [published]
   issues:
@@ -42,6 +38,14 @@ jobs:
           echo "Action=${{ github.event.action }}" >> $GITHUB_OUTPUT
           TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
           echo "Timestamp=$TIMESTAMP"              >> $GITHUB_OUTPUT
+
+      - name: Debug Info
+        run: |
+          echo "Event: ${{ github.event_name }}"
+          echo "Repository: ${{ github.repository }}"
+          echo "Actor: ${{ github.actor }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "Webhook exists: ${{ secrets.DISCORD_WEBHOOK != '' }}"
 
       - name: Get commit info (push only)
         id: commit
@@ -78,6 +82,11 @@ jobs:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
           ALLOWED_MENTIONS: '{"parse":["roles","users"]}'
         run: |
+          if [ -z "$DISCORD_WEBHOOK" ]; then
+            echo "DISCORD_WEBHOOK is not set. Skipping notification."
+            exit 1
+          fi
+          
           EVENT="${{ steps.context.outputs.Event }}"
           ACTOR="${{ steps.context.outputs.Actor }}"
           REPO="${{ steps.context.outputs.Repo }}"
@@ -103,6 +112,8 @@ jobs:
                 thread_name: $thread,
                 thread_auto_archive_duration: 1440
               }' > payload.json
+              
+            cat payload.json
           }
 
           if [ "$EVENT" == "push" ]; then
@@ -128,10 +139,10 @@ jobs:
             generate_payload "📦 Push Event" "$DESC" $COLOR "$THREAD"
 
           elif [ "$EVENT" == "pull_request" ]; then
+            # 기존 PR 핸들러 코드
             PR_NUM="${{ github.event.pull_request.number }}"
             PR_TITLE="${{ github.event.pull_request.title }}"
             PR_URL="${{ github.event.pull_request.html_url }}"
-            PR_BODY="${{ github.event.pull_request.body }}"
             PR_AUTHOR="${{ github.event.pull_request.user.login }}"
             
             if [ "$ACTION" == "opened" ]; then
@@ -157,11 +168,11 @@ jobs:
             generate_payload "🔀 Pull Request" "$DESC" $COLOR "$THREAD"
 
           elif [ "$EVENT" == "release" ]; then
+            # 기존 release 핸들러 코드
             RELEASE_TAG="${{ github.event.release.tag_name }}"
             RELEASE_NAME="${{ github.event.release.name }}"
             RELEASE_URL="${{ github.event.release.html_url }}"
             RELEASE_AUTHOR="${{ github.event.release.author.login }}"
-            RELEASE_BODY="${{ github.event.release.body }}"
             
             DESC=$'**'"$RELEASE_AUTHOR"'**가 새 릴리스를 발행했습니다:\n['"$RELEASE_NAME"' ('"$RELEASE_TAG"')]('"$RELEASE_URL"')'
             COLOR=16750848
@@ -170,6 +181,7 @@ jobs:
             generate_payload "🚀 New Release" "$DESC" $COLOR "$THREAD"
 
           elif [ "$EVENT" == "issues" ]; then
+            # 기존 issues 핸들러 코드
             ISSUE_NUM="${{ github.event.issue.number }}"
             ISSUE_TITLE="${{ github.event.issue.title }}"
             ISSUE_URL="${{ github.event.issue.html_url }}"
@@ -189,6 +201,7 @@ jobs:
             generate_payload "🐛 Issue" "$DESC" $COLOR "$THREAD"
 
           elif [ "$EVENT" == "issue_comment" ]; then
+            # 기존 issue_comment 핸들러 코드
             COMMENT_AUTHOR="${{ github.event.comment.user.login }}"
             COMMENT_URL="${{ github.event.comment.html_url }}"
             ISSUE_NUM="${{ github.event.issue.number }}"
@@ -213,17 +226,26 @@ jobs:
             
             generate_payload "📅 Weekly Reminder" "$DESC" $COLOR "$THREAD"
           else
+            echo "지원되지 않는 이벤트 타입: $EVENT"
             exit 0
           fi
 
-          # Discord로 메시지 전송 시도, 실패 시 재시도
-          curl -s -f -X POST -H "Content-Type: application/json" -d @payload.json "$DISCORD_WEBHOOK" || {
-            echo "첫 번째 시도 실패. 5초 후 재시도합니다..."
-            sleep 5
-            curl -s -f -X POST -H "Content-Type: application/json" -d @payload.json "$DISCORD_WEBHOOK" || {
-              echo "두 번째 시도도 실패했습니다. Discord webhook URL을 확인하세요."
-              exit 1
-            }
-          }
+          echo "Discord 알림을 전송합니다..."
           
-          echo "Discord 알림이 성공적으로 전송되었습니다."
+          # Discord로 메시지 전송 시도, 실패 시 재시도
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST -H "Content-Type: application/json" -d @payload.json "$DISCORD_WEBHOOK")
+          
+          if [ "$STATUS" -eq 204 ]; then
+            echo "Discord 알림이 성공적으로 전송되었습니다."
+          else
+            echo "첫 번째 시도 실패 (상태 코드: $STATUS). 5초 후 재시도합니다..."
+            sleep 5
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST -H "Content-Type: application/json" -d @payload.json "$DISCORD_WEBHOOK")
+            
+            if [ "$STATUS" -eq 204 ]; then
+              echo "Discord 알림이 성공적으로 전송되었습니다."
+            else
+              echo "두 번째 시도도 실패했습니다 (상태 코드: $STATUS). Discord webhook URL을 확인하세요."
+              exit 1
+            fi
+          fi
