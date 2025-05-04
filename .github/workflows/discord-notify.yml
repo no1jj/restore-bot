@@ -19,14 +19,15 @@ on:
   issue_comment:
     types: [created]
   workflow_run:
+    workflows:
+      - "Discord Notification"    # ← 모니터링할 워크플로우 name
     types: [completed]
   schedule:
-    - cron: '0 9 * * 1'  # 매주 월요일 한국시간 09:00
+    - cron: '0 9 * * 1'            # 매주 월요일 한국시간 09:00
 
 jobs:
   notify:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -123,14 +124,7 @@ jobs:
             generate_payload "📦 Push Event" "$DESC" $COLOR "$THREAD"
 
           elif [ "$EVENT" == "pull_request" ]; then
-            # ... (기존 PR 핸들러 그대로)
-
-          elif [ "$EVENT" == "release" ]; then
-            # ... (기존 릴리즈 핸들러 그대로)
-
-          # 이하 다른 이벤트 핸들러 생략 가능
-
-          else
+            # ... 이하 동일
             exit 0
           fi
 
