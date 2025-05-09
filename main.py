@@ -32,7 +32,9 @@ loger = Logger()
 
 def RunBot():
     loger.info("🤖 봇", "Discord 봇 시작 중...")
-    return subprocess.Popen([sys.executable, "bot/bot.py"], 
+    currentDir = os.path.dirname(os.path.abspath(__file__))
+    botPath = os.path.join(currentDir, "bot", "bot.py")
+    return subprocess.Popen([sys.executable, botPath], 
                           stdout=subprocess.PIPE,
                           stderr=subprocess.STDOUT,
                           text=True,
@@ -41,15 +43,17 @@ def RunBot():
 
 def RunWebServer():
     loger.info("🌐 웹", "웹 서버 시작 중...")
+    currentDir = os.path.dirname(os.path.abspath(__file__))
+    webAppPath = os.path.join(currentDir, "web", "app.js")
     if os.name == 'nt':
-        return subprocess.Popen(["node", "web/app.js"], 
+        return subprocess.Popen(["node", webAppPath], 
                               stdout=subprocess.PIPE,
                               stderr=subprocess.STDOUT,
                               text=True,
                               encoding='utf-8',
                               errors='replace')
     else:
-        return subprocess.Popen(["node", "web/app.js"], 
+        return subprocess.Popen(["node", web_app_path], 
                               stdout=subprocess.PIPE,
                               stderr=subprocess.STDOUT,
                               text=True,
@@ -141,4 +145,4 @@ if __name__ == "__main__":
         
         PrintClosingBanner("RestoreBot")
 
-# V1.3.2
+# V1.5.3

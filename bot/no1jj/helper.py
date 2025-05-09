@@ -60,26 +60,42 @@ def GenDB():
     try:
         conn = sqlite3.connect(filePath)
         cursor = conn.cursor()
+        cursor.execute('''CREATE TABLE IF NOT EXISTS Keys (
+                            Key TEXT NOT NULL,
+                            serverId TEXT NOT NULL,
+                            password TEXT NOT NULL,
+                            salt TEXT NOT NULL
+                        )''')
         cursor.execute('''CREATE TABLE IF NOT EXISTS WebPanel (
                         id TEXT PRIMARY KEY,
-                        name TEXT NOT NULL,
+                        password TEXT NOT NULL,
+                        salt TEXT NOT NULL,
+                        serverId TEXT NOT NULL,
                         lastLogin TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     )''')
-        cursor.execute('''CREATE TABLE IF NOT EXISTS AuthWhiteList (
+        cursor.execute('''CREATE TABLE IF NOT EXISTS WhiteListUserId (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         userId TEXT UNIQUE
                     )''')
-        cursor.execute('''CREATE TABLE IF NOT EXISTS AuthBlackList (
+        cursor.execute('''CREATE TABLE IF NOT EXISTS BlackListUserId (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         userId TEXT UNIQUE
                     )''')
-        cursor.execute('''CREATE TABLE IF NOT EXISTS IpWhiteList (
+        cursor.execute('''CREATE TABLE IF NOT EXISTS WhiteListIp (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         ip TEXT UNIQUE
                     )''')
-        cursor.execute('''CREATE TABLE IF NOT EXISTS IpBlackList (
+        cursor.execute('''CREATE TABLE IF NOT EXISTS BlackListIp (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         ip TEXT UNIQUE
+                    )''')
+        cursor.execute('''CREATE TABLE IF NOT EXISTS WhiteListMail (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        mail TEXT UNIQUE
+                    )''')
+        cursor.execute('''CREATE TABLE IF NOT EXISTS BlackListMail (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        mail TEXT UNIQUE
                     )''')
         
         cursor.execute('''CREATE TABLE IF NOT EXISTS ServerCustomLinks (
@@ -526,4 +542,4 @@ def RunDBQuery(queryFunc):
         print(f"DB 쿼리 실행 중 오류: {str(e)}")
         raise e
 
-# V1.5.1
+# V1.5.3

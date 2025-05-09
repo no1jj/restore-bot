@@ -55,9 +55,12 @@ class ServerRegisterModal(Modal):
                 key = helper.GenRandom(16)
                 helper.GenServerDB(str(interaction.guild_id), interaction.guild.name, timestamp.strftime("%Y-%m-%d %H:%M:%S"), key)
                 
+                salt = uuid.uuid4().hex
+                hashedPassword = hashlib.sha256(password.encode() + salt.encode()).hexdigest()
+                
                 conn = sqlite3.connect(os.path.join(config.DBPath))
                 cursor = conn.cursor()
-                cursor.execute("INSERT INTO Keys (Key, serverId) VALUES (?, ?)", (key, str(interaction.guild_id)))
+                cursor.execute("INSERT INTO Keys (Key, serverId, password, salt) VALUES (?, ?, ?, ?)", (key, str(interaction.guild_id), hashedPassword, salt))
                 conn.commit()
                 conn.close()
             except Exception as e:
@@ -69,22 +72,14 @@ class ServerRegisterModal(Modal):
                 salt = uuid.uuid4().hex
                 hashedPassword = hashlib.sha256(password.encode() + salt.encode()).hexdigest()
                 
-                try:
-                    salt = uuid.uuid4().hex
-                    hashedPassword = hashlib.sha256(password.encode() + salt.encode()).hexdigest()
-                    
-                    conn = sqlite3.connect(os.path.join(config.DBPath))
-                    cursor = conn.cursor()
-                    cursor.execute("""
-                        INSERT INTO WebPanel (id, password, salt, serverId) 
-                        VALUES (?, ?, ?, ?)
-                    """, (id, hashedPassword, salt, self.server_id))
-                    conn.commit()
-                    conn.close()
-                except Exception as e:
-                    print(f"웹패널 정보 저장 중 오류 발생: {e}")
-                    await helper.ErrorEmbed(interaction, f"웹패널 정보 저장 중 오류가 발생했습니다: {str(e)}")
-                    return
+                conn = sqlite3.connect(os.path.join(config.DBPath))
+                cursor = conn.cursor()
+                cursor.execute("""
+                    INSERT INTO WebPanel (id, password, salt, serverId) 
+                    VALUES (?, ?, ?, ?)
+                """, (id, hashedPassword, salt, self.server_id))
+                conn.commit()
+                conn.close()
             except Exception as e:
                 print(f"웹패널 정보 저장 중 오류 발생: {e}")
                 await helper.ErrorEmbed(interaction, f"웹패널 정보 저장 중 오류가 발생했습니다: {str(e)}")
@@ -128,4 +123,4 @@ class ServerRegisterModal(Modal):
         except Exception as e:
             await helper.ErrorEmbed(interaction, f"오류가 발생했습니다: {str(e)}") 
 
-# V1.3.2
+# V1.5.3
