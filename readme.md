@@ -78,7 +78,7 @@ RestoreBot은 디스코드 서버 관리자를 위한 종합적인 보안 및 �
     </tr>
     <tr>
       <td align="center">
-        <img src="https://cdn.discordapp.com/attachments/1337624999380521035/1368480305152790599/image.png?ex=68186019&is=68170e99&hm=ad76258bfbc8e0297cbe8b3f3ecc5de1f2ee71f913621897fb89785670a5cf62&" width="400px" alt="고유 링크 설정">
+        <img src="https://cdn.discordapp.com/attachments/1337624999380521035/1368480531322376263/image.png" width="400px" alt="고유 링크 설정">
         <br>
         <em>고유 링크 설정</em>
       </td>
