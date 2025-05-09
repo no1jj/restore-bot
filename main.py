@@ -53,7 +53,7 @@ def RunWebServer():
                               encoding='utf-8',
                               errors='replace')
     else:
-        return subprocess.Popen(["node", web_app_path], 
+        return subprocess.Popen(["node", webAppPath], 
                               stdout=subprocess.PIPE,
                               stderr=subprocess.STDOUT,
                               text=True,
